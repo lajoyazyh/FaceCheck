@@ -7,6 +7,10 @@ spring:
   docker:
     compose:
       enabled: false
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
 
 logging:
   level:

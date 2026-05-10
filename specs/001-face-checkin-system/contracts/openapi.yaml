@@ -100,9 +100,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FacePhotoSummary'
+                $ref: '#/components/schemas/ApiResponseFacePhotoSummaryList'
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -127,11 +125,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FacePhotoSummary'
+                $ref: '#/components/schemas/ApiResponseFacePhotoSummary'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /api/me/face-photos/{photoId}:
     delete:
@@ -146,6 +146,82 @@ paths:
           description: Photo deletion accepted
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/users/{userId}/face-photos:
+    get:
+      tags: [AdminUsers]
+      summary: List face photos for a managed user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Managed user face photos returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseFacePhotoSummaryList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [AdminUsers]
+      summary: Upload a face photo for a managed user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          description: Accepted for async registration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseFacePhotoSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/admin/users/{userId}/face-photos/{photoId}:
+    delete:
+      tags: [AdminUsers]
+      summary: Disable and delete a face photo for a managed user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PhotoId'
+      responses:
+        '204':
+          description: Photo deletion accepted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -774,6 +850,42 @@ components:
         timestamp:
           type: string
           format: date-time
+    ApiResponseFacePhotoSummary:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/FacePhotoSummary'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseFacePhotoSummaryList:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacePhotoSummary'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
     UserProfile:
       type: object
       required: [userId, username, role, status]
@@ -837,20 +949,23 @@ components:
           enum: [ACTIVE, LOCKED, DISABLED]
     FacePhotoSummary:
       type: object
-      required: [photoId, personId, detectStatus, registerStatus, enabled, createdAt]
+      required: [photoId, userId, status, detectStatus, registerStatus, enabled, createdAt]
       properties:
         photoId:
           type: string
           format: uuid
-        personId:
+        userId:
           type: string
           format: uuid
+        status:
+          type: string
+          enum: [PENDING_REGISTER, ACTIVE, FAILED, DELETE_PENDING, DELETE_FAILED, DELETED]
         detectStatus:
           type: string
           enum: [PENDING, PASSED, FAILED]
         registerStatus:
           type: string
-          enum: [PENDING, ACTIVE, FAILED, DISABLED, DELETE_PENDING, DELETE_FAILED, DELETED]
+          enum: [PENDING, ACTIVE, FAILED, DELETE_PENDING, DELETE_FAILED, DELETED]
         failureCode:
           type: string
           nullable: true

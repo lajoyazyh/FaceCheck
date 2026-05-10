@@ -6,6 +6,8 @@ public interface HuaweiObsStorageService {
 
     StoredObject upload(String objectKey, byte[] content, String contentType);
 
+    byte[] read(String objectKey);
+
     void delete(String objectKey);
 
     URI generatePreviewUrl(String objectKey);

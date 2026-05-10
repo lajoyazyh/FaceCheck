@@ -33,6 +33,15 @@ public class HuaweiObsStorageServiceImpl implements HuaweiObsStorageService {
     }
 
     @Override
+    public byte[] read(String objectKey) {
+        byte[] content = objectStore.get(objectKey);
+        if (content == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "Object does not exist");
+        }
+        return content.clone();
+    }
+
+    @Override
     public void delete(String objectKey) {
         objectStore.remove(objectKey);
     }
