@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.facecheck.admin.service.AuditLogService;
 import com.facecheck.auth.security.CurrentUserAccess;
 import com.facecheck.common.error.BusinessException;
 import com.facecheck.common.error.ErrorCode;
@@ -36,6 +37,9 @@ class AttendanceSessionServiceTest {
     @Mock
     private QrTokenService qrTokenService;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     private AttendanceSessionService attendanceSessionService;
 
     @BeforeEach
@@ -43,7 +47,8 @@ class AttendanceSessionServiceTest {
         attendanceSessionService = new AttendanceSessionService(
                 attendanceSessionRepository,
                 currentUserAccess,
-                qrTokenService
+                qrTokenService,
+                auditLogService
         );
     }
 
@@ -62,7 +67,7 @@ class AttendanceSessionServiceTest {
                 .extracting(exception -> ((BusinessException) exception).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_SESSION_TIME_WINDOW);
 
-        verifyNoInteractions(attendanceSessionRepository, currentUserAccess, qrTokenService);
+        verifyNoInteractions(attendanceSessionRepository, currentUserAccess, qrTokenService, auditLogService);
     }
 
     @Test

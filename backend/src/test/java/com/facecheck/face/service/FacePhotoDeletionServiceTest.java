@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.facecheck.admin.service.AuditLogService;
 import com.facecheck.auth.security.CurrentUserAccess;
 import com.facecheck.face.FaceRecognitionProvider;
 import com.facecheck.face.messaging.FacePhotoDeleteCompensationTask;
@@ -54,6 +55,9 @@ class FacePhotoDeletionServiceTest {
     @Mock
     private RabbitTemplate rabbitTemplate;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     private FacePhotoDeletionService deletionService;
 
     @BeforeEach
@@ -65,7 +69,8 @@ class FacePhotoDeletionServiceTest {
                 faceRecognitionProvider,
                 storageService,
                 rabbitTemplate,
-                "face.photo.delete.compensate"
+                "face.photo.delete.compensate",
+                auditLogService
         );
 
         when(facePhotoRepository.save(any(FacePhoto.class))).thenAnswer(invocation -> invocation.getArgument(0));

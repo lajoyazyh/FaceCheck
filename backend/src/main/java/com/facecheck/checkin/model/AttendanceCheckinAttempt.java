@@ -79,6 +79,21 @@ public class AttendanceCheckinAttempt {
     @Column(name = "device_id", length = 128)
     private String deviceId;
 
+    @Column(name = "review_note", columnDefinition = "TEXT")
+    private String reviewNote;
+
+    @Column(nullable = false)
+    private boolean reviewed;
+
+    @Column(name = "reviewed_by_user_id")
+    private UUID reviewedByUserId;
+
+    @Column(name = "reviewed_at")
+    private Instant reviewedAt;
+
+    @Column(name = "retry_count", nullable = false)
+    private int retryCount;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -237,6 +252,46 @@ public class AttendanceCheckinAttempt {
         this.deviceId = deviceId;
     }
 
+    public String getReviewNote() {
+        return reviewNote;
+    }
+
+    public void setReviewNote(String reviewNote) {
+        this.reviewNote = reviewNote;
+    }
+
+    public boolean isReviewed() {
+        return reviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        this.reviewed = reviewed;
+    }
+
+    public UUID getReviewedByUserId() {
+        return reviewedByUserId;
+    }
+
+    public void setReviewedByUserId(UUID reviewedByUserId) {
+        this.reviewedByUserId = reviewedByUserId;
+    }
+
+    public Instant getReviewedAt() {
+        return reviewedAt;
+    }
+
+    public void setReviewedAt(Instant reviewedAt) {
+        this.reviewedAt = reviewedAt;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -256,6 +311,9 @@ public class AttendanceCheckinAttempt {
         }
         if (resultCode == null) {
             resultCode = "PROCESSING";
+        }
+        if (retryCount < 0) {
+            retryCount = 0;
         }
         createdAt = now;
         updatedAt = now;

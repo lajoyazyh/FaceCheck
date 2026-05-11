@@ -130,7 +130,7 @@ class FacePhotoControllerContractTest {
         private RuntimeException currentUserUploadError;
 
         private StubFacePhotoService() {
-            super(null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null, null);
         }
 
         @Override
@@ -170,7 +170,7 @@ class FacePhotoControllerContractTest {
     private static final class StubFacePhotoDeletionService extends FacePhotoDeletionService {
 
         private StubFacePhotoDeletionService() {
-            super(null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null);
         }
 
         @Override

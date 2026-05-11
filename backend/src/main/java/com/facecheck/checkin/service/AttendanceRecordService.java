@@ -22,6 +22,17 @@ public class AttendanceRecordService {
 
     @Transactional
     public RecordOutcome persist(UUID sessionId, UUID userId, UUID attemptId, Double similarity) {
+        return persist(sessionId, userId, attemptId, similarity, AttendanceRecordSource.APP_QR_ANON);
+    }
+
+    @Transactional
+    public RecordOutcome persist(
+            UUID sessionId,
+            UUID userId,
+            UUID attemptId,
+            Double similarity,
+            AttendanceRecordSource source
+    ) {
         Optional<AttendanceRecord> existing = attendanceRecordRepository.findBySessionIdAndUserId(sessionId, userId);
         if (existing.isPresent()) {
             return new RecordOutcome(false, existing.get());
@@ -34,7 +45,7 @@ public class AttendanceRecordService {
         record.setCheckinTime(Instant.now());
         record.setStatus(AttendanceRecordStatus.VALID);
         record.setSimilarity(similarity);
-        record.setSource(AttendanceRecordSource.APP_QR_ANON);
+        record.setSource(source);
 
         try {
             return new RecordOutcome(true, attendanceRecordRepository.saveAndFlush(record));

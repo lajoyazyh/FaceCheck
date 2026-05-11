@@ -1,5 +1,6 @@
 package com.facecheck.face.service;
 
+import com.facecheck.admin.service.AuditLogService;
 import com.facecheck.auth.security.CurrentUserAccess;
 import com.facecheck.common.error.BusinessException;
 import com.facecheck.common.error.ErrorCode;
@@ -32,6 +33,7 @@ public class FacePhotoService {
     private final ObjectKeyStrategy objectKeyStrategy;
     private final FacePhotoRegisterPublisher registerPublisher;
     private final PreviewUrlService previewUrlService;
+    private final AuditLogService auditLogService;
 
     public FacePhotoService(
             FacePhotoRepository facePhotoRepository,
@@ -41,7 +43,8 @@ public class FacePhotoService {
             HuaweiObsStorageService storageService,
             ObjectKeyStrategy objectKeyStrategy,
             FacePhotoRegisterPublisher registerPublisher,
-            PreviewUrlService previewUrlService
+            PreviewUrlService previewUrlService,
+            AuditLogService auditLogService
     ) {
         this.facePhotoRepository = facePhotoRepository;
         this.userRepository = userRepository;
@@ -51,6 +54,7 @@ public class FacePhotoService {
         this.objectKeyStrategy = objectKeyStrategy;
         this.registerPublisher = registerPublisher;
         this.previewUrlService = previewUrlService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -100,6 +104,16 @@ public class FacePhotoService {
         } catch (RuntimeException exception) {
             storageService.delete(objectKey);
             throw exception;
+        }
+
+        if (!actorUserId.equals(userId)) {
+            auditLogService.recordCurrentActor(
+                    "ADMIN_FACE_PHOTO_UPLOAD",
+                    "FACE_PHOTO",
+                    savedPhoto.getId(),
+                    "Administrator uploaded a face photo for another user.",
+                    java.util.Map.of("userId", userId.toString())
+            );
         }
 
         return FacePhotoSummaryResponse.from(savedPhoto, previewUrlService.previewUrl(savedPhoto));

@@ -248,9 +248,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AttendanceRecordSummary'
+                $ref: '#/components/schemas/ApiResponseMyAttendanceRecordSummaryList'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -516,6 +514,50 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/admin/attendance-records:
+    get:
+      tags: [AdminSessions]
+      summary: List global attendance records
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: userId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [VALID, MANUAL_CONFIRMED]
+      responses:
+        '200':
+          description: Filtered attendance records returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseAttendanceRecordSummaryList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/sessions/{sessionId}/records:
     get:
       tags: [AdminSessions]
@@ -524,15 +566,28 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SessionId'
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [VALID, MANUAL_CONFIRMED]
       responses:
         '200':
           description: Session attendance records returned
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AttendanceRecordSummary'
+                $ref: '#/components/schemas/ApiResponseAttendanceRecordSummaryList'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -558,19 +613,51 @@ paths:
           schema:
             type: string
             format: uuid
+        - in: query
+          name: reviewed
+          schema:
+            type: boolean
       responses:
         '200':
           description: Attempt list returned
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CheckinAttemptResponse'
+                $ref: '#/components/schemas/ApiResponseAdminCheckinAttemptList'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /api/admin/checkin-attempts/{attemptId}/review:
+    post:
+      tags: [AdminReview]
+      summary: Append review note or mark an abnormal attempt reviewed
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCheckinAttemptRequest'
+      responses:
+        '200':
+          description: Review state updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseAdminCheckinAttemptResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/admin/checkin-attempts/{attemptId}/retry:
     post:
@@ -586,7 +673,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CheckinAttemptResponse'
+                $ref: '#/components/schemas/ApiResponseAdminCheckinAttemptResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -685,7 +772,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SystemStateResponse'
+                $ref: '#/components/schemas/ApiResponseSystemStateResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -703,9 +790,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SystemConfigItem'
+                $ref: '#/components/schemas/ApiResponseSystemConfigItemList'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -735,7 +820,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SystemConfigItem'
+                $ref: '#/components/schemas/ApiResponseSystemConfigItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -995,6 +1080,133 @@ components:
         timestamp:
           type: string
           format: date-time
+    ApiResponseMyAttendanceRecordSummaryList:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyAttendanceRecordSummary'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseAttendanceRecordSummaryList:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceRecordSummary'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseAdminCheckinAttemptResponse:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/AdminCheckinAttemptResponse'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseAdminCheckinAttemptList:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCheckinAttemptResponse'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseSystemStateResponse:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/SystemStateResponse'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseSystemConfigItemList:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemConfigItem'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ApiResponseSystemConfigItem:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/SystemConfigItem'
+        error:
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
     UserProfile:
       type: object
       required: [userId, username, role, status]
@@ -1223,6 +1435,26 @@ components:
         nextPollAfterSeconds:
           type: integer
           nullable: true
+    MyAttendanceRecordSummary:
+      type: object
+      required: [recordId, sessionId, sessionName, checkinTime, status, message]
+      properties:
+        recordId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        sessionName:
+          type: string
+        checkinTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [VALID, MANUAL_CONFIRMED]
+        message:
+          type: string
     AttendanceRecordSummary:
       type: object
       required: [recordId, sessionId, sessionName, userId, checkinTime, status]
@@ -1250,6 +1482,56 @@ components:
           type: number
           format: double
           nullable: true
+    AdminCheckinAttemptResponse:
+      type: object
+      required: [attemptId, sessionId, sessionName, status, resultCode, createdAt, updatedAt, reviewed, retryCount]
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        sessionName:
+          type: string
+        status:
+          $ref: '#/components/schemas/CheckinStatus'
+        resultCode:
+          type: string
+        resultMessage:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        matchedUserId:
+          type: string
+          format: uuid
+          nullable: true
+        maskedUsername:
+          type: string
+          nullable: true
+        similarity:
+          type: number
+          format: double
+          nullable: true
+        reviewed:
+          type: boolean
+        reviewNote:
+          type: string
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        reviewedByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        retryCount:
+          type: integer
     SystemStateResponse:
       type: object
       properties:
@@ -1294,6 +1576,14 @@ components:
       properties:
         configValue:
           type: string
+    ReviewCheckinAttemptRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 500
+        reviewed:
+          type: boolean
     ErrorResponse:
       type: object
       required: [success, error, timestamp]

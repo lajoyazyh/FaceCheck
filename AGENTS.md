@@ -199,3 +199,25 @@ The agent must not:
 8. Change the project from a Spring Boot monolith to microservices.
 9. Add Kafka.
 10. Add local OpenCV, local ONNX, or local embedding retrieval.
+
+
+
+### Testcontainers Docker API Compatibility Note
+
+Testcontainers should normally rely on standard Docker auto-discovery.
+
+Do not hardcode Docker host, socket path, provider strategy, or Docker API version unless a specific environment requires it.
+
+Current local compatibility note:
+
+- In the current WSL + Docker Desktop environment, Testcontainers required `api.version=1.41` through Maven Surefire system properties to complete the Docker handshake reliably.
+- This is an environment compatibility workaround, not a business requirement.
+- If CI or another developer machine runs `cd backend && ./mvnw -q test` successfully without this setting, prefer removing or environment-gating this workaround.
+- If Testcontainers fails with Docker handshake errors, first run:
+  - `docker version`
+  - `docker info`
+  - `docker ps`
+  - `docker context ls`
+  - `echo "DOCKER_HOST=$DOCKER_HOST"`
+  - `ls -l /var/run/docker.sock /var/run/docker-cli.sock 2>/dev/null || true`
+- If Docker daemon is available but Testcontainers Java process fails to negotiate with Docker, then check whether the `api.version=1.41` Surefire property is required for the current environment.

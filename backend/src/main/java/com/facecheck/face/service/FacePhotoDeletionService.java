@@ -1,5 +1,6 @@
 package com.facecheck.face.service;
 
+import com.facecheck.admin.service.AuditLogService;
 import com.facecheck.auth.security.CurrentUserAccess;
 import com.facecheck.common.error.BusinessException;
 import com.facecheck.common.error.ErrorCode;
@@ -30,6 +31,7 @@ public class FacePhotoDeletionService {
     private final com.facecheck.storage.HuaweiObsStorageService storageService;
     private final RabbitTemplate rabbitTemplate;
     private final String deleteQueue;
+    private final AuditLogService auditLogService;
 
     public FacePhotoDeletionService(
             FacePhotoRepository facePhotoRepository,
@@ -38,7 +40,8 @@ public class FacePhotoDeletionService {
             FaceRecognitionProvider faceRecognitionProvider,
             com.facecheck.storage.HuaweiObsStorageService storageService,
             RabbitTemplate rabbitTemplate,
-            @Value("${facecheck.messaging.face-photo.delete-queue}") String deleteQueue
+            @Value("${facecheck.messaging.face-photo.delete-queue}") String deleteQueue,
+            AuditLogService auditLogService
     ) {
         this.facePhotoRepository = facePhotoRepository;
         this.huaweiFaceRefRepository = huaweiFaceRefRepository;
@@ -47,6 +50,7 @@ public class FacePhotoDeletionService {
         this.storageService = storageService;
         this.rabbitTemplate = rabbitTemplate;
         this.deleteQueue = deleteQueue;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -58,6 +62,13 @@ public class FacePhotoDeletionService {
     @Transactional
     public void deleteUserPhoto(UUID userId, UUID photoId) {
         deletePhoto(loadActivePhoto(photoId, userId));
+        auditLogService.recordCurrentActor(
+                "ADMIN_FACE_PHOTO_DELETE",
+                "FACE_PHOTO",
+                photoId,
+                "Administrator deleted a managed user's face photo.",
+                java.util.Map.of("userId", userId.toString())
+        );
     }
 
     @Transactional

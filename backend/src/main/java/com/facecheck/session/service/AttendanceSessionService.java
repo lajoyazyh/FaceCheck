@@ -1,5 +1,6 @@
 package com.facecheck.session.service;
 
+import com.facecheck.admin.service.AuditLogService;
 import com.facecheck.auth.security.CurrentUserAccess;
 import com.facecheck.common.error.BusinessException;
 import com.facecheck.common.error.ErrorCode;
@@ -24,15 +25,18 @@ public class AttendanceSessionService {
     private final AttendanceSessionRepository attendanceSessionRepository;
     private final CurrentUserAccess currentUserAccess;
     private final QrTokenService qrTokenService;
+    private final AuditLogService auditLogService;
 
     public AttendanceSessionService(
             AttendanceSessionRepository attendanceSessionRepository,
             CurrentUserAccess currentUserAccess,
-            QrTokenService qrTokenService
+            QrTokenService qrTokenService,
+            AuditLogService auditLogService
     ) {
         this.attendanceSessionRepository = attendanceSessionRepository;
         this.currentUserAccess = currentUserAccess;
         this.qrTokenService = qrTokenService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
@@ -59,6 +63,13 @@ public class AttendanceSessionService {
 
         AttendanceSession saved = attendanceSessionRepository.save(session);
         qrTokenService.cache(saved);
+        auditLogService.recordCurrentActor(
+                "SESSION_CREATE",
+                "ATTENDANCE_SESSION",
+                saved.getId(),
+                "Administrator created an attendance session.",
+                java.util.Map.of("status", saved.getStatus().name(), "qrTokenVersion", saved.getQrTokenVersion())
+        );
         return AttendanceSessionSummaryResponse.from(saved);
     }
 
@@ -74,6 +85,13 @@ public class AttendanceSessionService {
         session.setEndTime(request.endTime());
         session.setLateAfterTime(request.lateAfterTime());
         qrTokenService.cache(session);
+        auditLogService.recordCurrentActor(
+                "SESSION_UPDATE",
+                "ATTENDANCE_SESSION",
+                session.getId(),
+                "Administrator updated an attendance session.",
+                java.util.Map.of("status", session.getStatus().name())
+        );
         return AttendanceSessionSummaryResponse.from(session);
     }
 
@@ -83,6 +101,13 @@ public class AttendanceSessionService {
         requireStatus(session, AttendanceSessionStatus.DRAFT, "Only draft sessions can be published");
         session.setStatus(AttendanceSessionStatus.PUBLISHED);
         qrTokenService.cache(session);
+        auditLogService.recordCurrentActor(
+                "SESSION_PUBLISH",
+                "ATTENDANCE_SESSION",
+                session.getId(),
+                "Administrator published an attendance session.",
+                java.util.Map.of("status", session.getStatus().name())
+        );
         return AttendanceSessionSummaryResponse.from(session);
     }
 
@@ -92,6 +117,13 @@ public class AttendanceSessionService {
         requireStatus(session, AttendanceSessionStatus.PUBLISHED, "Only published sessions can be closed");
         session.setStatus(AttendanceSessionStatus.CLOSED);
         qrTokenService.cache(session);
+        auditLogService.recordCurrentActor(
+                "SESSION_CLOSE",
+                "ATTENDANCE_SESSION",
+                session.getId(),
+                "Administrator closed an attendance session.",
+                java.util.Map.of("status", session.getStatus().name())
+        );
         return AttendanceSessionSummaryResponse.from(session);
     }
 
@@ -103,6 +135,13 @@ public class AttendanceSessionService {
         }
         session.setStatus(AttendanceSessionStatus.CANCELED);
         qrTokenService.cache(session);
+        auditLogService.recordCurrentActor(
+                "SESSION_CANCEL",
+                "ATTENDANCE_SESSION",
+                session.getId(),
+                "Administrator canceled an attendance session.",
+                java.util.Map.of("status", session.getStatus().name())
+        );
         return AttendanceSessionSummaryResponse.from(session);
     }
 
@@ -119,6 +158,13 @@ public class AttendanceSessionService {
             throw new BusinessException(ErrorCode.INVALID_SESSION_STATUS, "Closed or canceled sessions cannot rotate QR tokens");
         }
         qrTokenService.rotateToken(session);
+        auditLogService.recordCurrentActor(
+                "SESSION_QR_RESET",
+                "ATTENDANCE_SESSION",
+                session.getId(),
+                "Administrator rotated the session QR token.",
+                java.util.Map.of("qrTokenVersion", session.getQrTokenVersion())
+        );
         return new QrTokenResponse(session.getId(), session.getQrToken(), qrTokenService.qrContent(session));
     }
 
