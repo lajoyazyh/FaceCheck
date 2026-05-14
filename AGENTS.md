@@ -85,6 +85,12 @@ For the current Maven backend project, prefer:
 
 - cd backend && ./mvnw -q -DskipTests verify
 - cd backend && ./mvnw -q test
+- Backend local development and diagnostics should prefer Maven Wrapper first:
+  `./mvnw` on Unix-like shells and `mvnw.cmd` on Windows.
+- On Windows, if `.\mvnw.cmd -v` prints `StatusCode`, `RawContentLength`, or
+  `Content {80, 75, 3, 4...}` style `Invoke-WebRequest` output, treat it as a
+  broken wrapper download/extract/launch chain. Fix Maven Wrapper first, and do
+  not misdiagnose it as a Spring Boot, Flyway, or `/api/health` problem.
 
 Do not run backend Maven commands from the repository root unless using an explicit backend pom path.
 

@@ -63,15 +63,7 @@
 
   $env:SPRING_RABBITMQ_LISTENER_SIMPLE_AUTO_STARTUP="true"
 
-  
-
-   mvn spring-boot:run
-
-
-
-
-
-.\mvnw.cmd spring-boot:run(目前有问题)
+ .\mvnw.cmd spring-boot​​
 
   说明：
 

@@ -7,7 +7,7 @@
 
 系统面向普通用户和管理员两类角色。
 核心流程是：移动端拍照或选择图片上传，后端统一封装华为云 FRS 执行人脸检测、人脸入库、
-人脸搜索、人脸比对、活体检测和身份识别，识别成功后由本系统生成签到记录，并向前端返回
+人脸搜索、人脸比对和身份识别，识别成功后由本系统生成签到记录，并向前端返回
 签到结果。
 
 ## 核心能力
@@ -52,3 +52,30 @@
 - Windows 桌面调试仅用于普通页面、状态流转和接口调用。
 - 涉及摄像头、权限申请、图片读取、文件上传、网络访问和签到拍照流程的功能，
   必须在 Android 真机或 Android 模拟器中验证。
+
+## Windows 本地后端启动诊断
+
+优先顺序：
+
+```powershell
+docker compose up -d postgres redis rabbitmq
+cd backend
+.\mvnw.cmd -v
+.\mvnw.cmd spring-boot:run
+```
+
+也可以先跑本地诊断脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\backend\scripts\doctor-local.ps1
+```
+
+如果 `.\mvnw.cmd -v` 输出 `StatusCode`、`RawContentLength` 或 `Content {80, 75, 3, 4...}`，说明 Maven Wrapper 下载链路异常。先修 wrapper 或临时使用系统 Maven，不要先排查 `/api/health`。
+
+如果启动日志出现 `SQL State 28P01` 和 `用户 "facecheck" Password 认证失败`，说明 Spring Boot 已经开始启动，但 Flyway 连不上本地 PostgreSQL。优先检查 Docker Postgres 容器、数据库用户名密码、`docker compose ps` 里 PostgreSQL 是否真的映射了 `0.0.0.0:5432->5432/tcp`，以及旧 volume 是否还保留着旧密码。
+
+- Windows 浏览器或 PowerShell 访问健康检查：`http://localhost:8080/api/health`
+- Android Emulator 访问 Windows 后端：`http://10.0.2.2:8080`
+- Android 真机访问 Windows 后端：改成 Windows 主机的局域网 IP
+
+更完整说明见 [docs/local-dev-windows.md](docs/local-dev-windows.md)。
