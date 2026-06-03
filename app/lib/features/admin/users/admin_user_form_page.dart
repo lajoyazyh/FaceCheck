@@ -143,7 +143,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    initialValue: _role,
+                    value: _role,
                     decoration: const InputDecoration(
                       labelText: '角色',
                       border: OutlineInputBorder(),
@@ -164,7 +164,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   if (widget.isEditing) ...<Widget>[
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: _status,
+                      value: _status,
                       decoration: const InputDecoration(
                         labelText: '状态',
                         border: OutlineInputBorder(),

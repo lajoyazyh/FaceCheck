@@ -108,7 +108,7 @@ class _GlobalRecordsPageState extends ConsumerState<GlobalRecordsPage> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: _statusFilter,
+                      value: _statusFilter,
                       decoration: const InputDecoration(
                         labelText: '状态',
                         border: OutlineInputBorder(),

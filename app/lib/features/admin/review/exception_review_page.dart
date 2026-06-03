@@ -156,7 +156,7 @@ class _ExceptionReviewPageState extends ConsumerState<ExceptionReviewPage> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: _statusFilter,
+                      value: _statusFilter,
                       decoration: const InputDecoration(
                         labelText: '主状态',
                         border: OutlineInputBorder(),
@@ -184,7 +184,7 @@ class _ExceptionReviewPageState extends ConsumerState<ExceptionReviewPage> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      initialValue: _reviewedFilter,
+                      value: _reviewedFilter,
                       decoration: const InputDecoration(
                         labelText: '复核状态',
                         border: OutlineInputBorder(),
