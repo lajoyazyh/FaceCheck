@@ -56,7 +56,7 @@ class UserSelfAccessIntegrationTest extends RedisRabbitContainerSupport {
     @Test
     void shouldAllowCurrentUserToReachOwnData() throws Exception {
         String token = jwtService.issue(owner).accessToken();
-        mockMvc.perform(get("/api/test/users/{userId}/self-access", owner.getId())
+        mockMvc.perform(get("/api/me/test/users/{userId}/self-access", owner.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk());
     }
@@ -64,7 +64,7 @@ class UserSelfAccessIntegrationTest extends RedisRabbitContainerSupport {
     @Test
     void shouldDenyAccessToAnotherUsersData() throws Exception {
         String token = jwtService.issue(owner).accessToken();
-        mockMvc.perform(get("/api/test/users/{userId}/self-access", anotherUser.getId())
+        mockMvc.perform(get("/api/me/test/users/{userId}/self-access", anotherUser.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
@@ -81,7 +81,7 @@ class UserSelfAccessIntegrationTest extends RedisRabbitContainerSupport {
     @RestController
     static class SelfAccessTestController {
 
-        @GetMapping("/api/test/users/{userId}/self-access")
+        @GetMapping("/api/me/test/users/{userId}/self-access")
         @PreAuthorize("@currentUserAccess.matches(authentication, #userId)")
         ApiResponse<String> selfAccess(@PathVariable UUID userId) {
             return ApiResponse.success(userId.toString());

@@ -104,6 +104,17 @@ class AuthControllerTest extends RedisRabbitContainerSupport {
                 .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
 
+    @Test
+    void shouldDenyDeprecatedTestNamespaceEvenForAuthenticatedUsers() throws Exception {
+        User user = userRepository.findByUsername("user-one").orElseThrow();
+        String token = jwtService.issue(user).accessToken();
+
+        mockMvc.perform(get("/api/test/ping")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+    }
+
     private User saveUser(String username, String rawPassword, UserRole role, UserStatus status) {
         User user = new User();
         user.setUsername(username);

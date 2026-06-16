@@ -1,0 +1,71 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  backend-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Verify backend compiles
+        working-directory: backend
+        run: ./mvnw -q -DskipTests verify
+
+      - name: Run backend tests
+        working-directory: backend
+        run: ./mvnw -q test
+
+  backend-deploy:
+    needs: backend-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH key
+        shell: bash
+        env:
+          FACECHECK_DEPLOY_SSH_KEY: ${{ secrets.FACECHECK_DEPLOY_SSH_KEY }}
+          FACECHECK_DEPLOY_HOST: ${{ secrets.FACECHECK_DEPLOY_HOST }}
+          FACECHECK_DEPLOY_PORT: ${{ secrets.FACECHECK_DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${FACECHECK_DEPLOY_SSH_KEY}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${FACECHECK_DEPLOY_PORT:-22}" "${FACECHECK_DEPLOY_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Deploy commit on server
+        shell: bash
+        env:
+          FACECHECK_DEPLOY_HOST: ${{ secrets.FACECHECK_DEPLOY_HOST }}
+          FACECHECK_DEPLOY_PORT: ${{ secrets.FACECHECK_DEPLOY_PORT }}
+          FACECHECK_DEPLOY_USER: ${{ secrets.FACECHECK_DEPLOY_USER }}
+          FACECHECK_REPOSITORY: ${{ github.repository }}
+          FACECHECK_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_ed25519 -p "${FACECHECK_DEPLOY_PORT:-22}" "${FACECHECK_DEPLOY_USER}@${FACECHECK_DEPLOY_HOST}" "
+            set -euo pipefail
+            DEPLOY_DIR=/opt/facecheck
+            REPO_URL=https://github.com/${FACECHECK_REPOSITORY}.git
+            if [ ! -d \"\${DEPLOY_DIR}/.git\" ]; then
+              rm -rf \"\${DEPLOY_DIR}\"
+              git clone \"\${REPO_URL}\" \"\${DEPLOY_DIR}\"
+            fi
+            cd \"\${DEPLOY_DIR}\"
+            git fetch --prune origin
+            git checkout --force \"${FACECHECK_SHA}\"
+            chmod +x deploy/facecheck/scripts/deploy.sh
+            FACECHECK_ENV_FILE=/etc/facecheck/facecheck.env deploy/facecheck/scripts/deploy.sh
+          "
