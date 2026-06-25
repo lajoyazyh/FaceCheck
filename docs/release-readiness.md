@@ -51,6 +51,6 @@ seed 数据仅用于 `local` profile 调试，不作为生产初始化方案。
 
 - Windows 本地运行脚本仍以 Java 21 为基线说明；若开发机默认 JDK 不是 21，需要用项目约定终端启动
 - Android 真机联调依赖局域网 IP 和 Windows 防火墙放行
-- Flutter App 当前默认连接已部署后端 `http://115.120.241.220:8080`；如需验证本地后端，Android Emulator 使用 `FACECHECK_BASE_URL=http://10.0.2.2:8080`
+- Flutter App 当前默认连接已部署后端 `https://115.120.241.220`；该入口使用自签名证书，Android Emulator/真机需要先安装并信任证书。如需验证本地后端，Android Emulator 使用 `FACECHECK_BASE_URL=http://10.0.2.2:8080`
 - Android Emulator 连接本地后端时如果 `10.0.2.2:8080` 直连不稳定，需要 `adb reverse tcp:8080 tcp:8080` 并把 `FACECHECK_BASE_URL` 切到 `http://127.0.0.1:8080`
 - 真实华为云限流、超时和区域配置仍需少量人工确认

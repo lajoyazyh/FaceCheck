@@ -171,7 +171,7 @@ The example file uses Maven Central by default and keeps an optional HTTPS Aliyu
 
 ## Health Check Addresses
 
-- Default Flutter app backend: `http://115.120.241.220:8080`
+- Default Flutter app backend: `https://115.120.241.220`
 - Windows browser or PowerShell: `http://localhost:8080/api/health`
 - Android Emulator to local backend: override with `FACECHECK_BASE_URL=http://10.0.2.2:8080`
 - Android real device to local backend: use the Windows host LAN IP instead of `localhost`

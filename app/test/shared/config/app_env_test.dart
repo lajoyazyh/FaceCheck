@@ -10,7 +10,7 @@ void main() {
         platform: TargetPlatform.android,
       );
 
-      expect(env.baseUrl, 'http://115.120.241.220:8080');
+      expect(env.baseUrl, 'https://115.120.241.220');
       expect(env.localBackendHosts, contains('115.120.241.220'));
     });
 

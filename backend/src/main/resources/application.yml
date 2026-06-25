@@ -50,6 +50,9 @@ facecheck:
       issuer: ${JWT_ISSUER:facecheck}
       secret: ${JWT_SECRET:replace-with-a-long-random-secret}
       expires-minutes: ${JWT_EXPIRES_MINUTES:120}
+    login-rate-limit:
+      window-seconds: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:300}
+      max-failed-attempts: ${LOGIN_RATE_LIMIT_MAX_FAILED_ATTEMPTS:5}
   huawei:
     enabled: ${HUAWEI_CLOUD_ENABLED:false}
     obs-enabled: ${OBS_ENABLED:false}

@@ -87,6 +87,27 @@ class AuthControllerTest extends RedisRabbitContainerSupport {
     }
 
     @Test
+    void shouldRateLimitRepeatedInvalidLoginAttempts() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"username":"admin-one","password":"wrong-password"}
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("INVALID_CREDENTIALS"));
+        }
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin-one","password":"wrong-password"}
+                                """))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
+    }
+
+    @Test
     void shouldBlacklistLoggedOutToken() throws Exception {
         User user = userRepository.findByUsername("user-one").orElseThrow();
         String token = jwtService.issue(user).accessToken();

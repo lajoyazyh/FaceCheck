@@ -21,31 +21,36 @@ public class AuthService {
     private final PasswordService passwordService;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final LoginRateLimitService loginRateLimitService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordService passwordService,
             JwtService jwtService,
-            TokenBlacklistService tokenBlacklistService
+            TokenBlacklistService tokenBlacklistService,
+            LoginRateLimitService loginRateLimitService
     ) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.jwtService = jwtService;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.loginRateLimitService = loginRateLimitService;
     }
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
+        loginRateLimitService.checkAllowed(request.username());
         User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+                .orElseThrow(() -> invalidCredentials(request.username()));
 
         if (!passwordService.matches(request.password(), user.getPasswordHash())) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+            throw invalidCredentials(request.username());
         }
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BusinessException(ErrorCode.ACCOUNT_DISABLED);
         }
 
+        loginRateLimitService.clear(request.username());
         user.setLastLoginAt(Instant.now());
         JwtService.IssuedToken issuedToken = jwtService.issue(user);
         return new LoginResponse(
@@ -55,6 +60,11 @@ public class AuthService {
                 user.getRole(),
                 toProfile(user)
         );
+    }
+
+    private BusinessException invalidCredentials(String username) {
+        loginRateLimitService.recordFailure(username);
+        return new BusinessException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     public void logout(Authentication authentication) {

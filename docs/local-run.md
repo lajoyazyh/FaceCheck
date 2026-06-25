@@ -75,7 +75,7 @@ docker compose up -d postgres redis rabbitmq
 
 ### 默认远程后端
 
-当前 Flutter App 默认连接已部署后端 `http://115.120.241.220:8080`。如果只是验证线上环境，不需要改代码或追加 `--dart-define`：
+当前 Flutter App 默认连接已部署后端 `https://115.120.241.220`。该入口使用服务器自签名证书；Android 真机或模拟器需要安装并信任对应证书后才能直接访问。只验证本地后端时继续使用下面的 HTTP `--dart-define`：
 
 ```powershell
 cd C:\Users\alvinding\Desktop\FaceCheck\app
@@ -150,6 +150,6 @@ C:\Users\alvinding\flutter\bin\flutter.bat test integration_test/admin_android_s
 1. `docker compose up -d postgres redis rabbitmq`
 2. `.\mvnw.cmd spring-boot:run`
 3. `curl.exe http://localhost:8080/api/health`
-4. Android 模拟器启动 App；默认连接 `http://115.120.241.220:8080`
+4. Android 模拟器启动 App；默认连接 `https://115.120.241.220`
 5. 用 `admin / Admin123!` 登录并跑管理员 smoke
 6. 用 `alice / user123!!` 登录并验证普通用户权限边界

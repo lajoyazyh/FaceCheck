@@ -11,6 +11,10 @@ public class RedisKeyFactory {
         return "auth:blacklist:" + jti;
     }
 
+    public String authLoginRate(String subject) {
+        return "auth:login:rate:" + subject;
+    }
+
     public String checkinIdempotency(String scope, String idempotencyKey) {
         return "checkin:idempotency:" + scope + ":" + idempotencyKey;
     }

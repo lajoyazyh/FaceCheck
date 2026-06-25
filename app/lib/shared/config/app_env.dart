@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-const String _publicBackendBaseUrl = 'http://115.120.241.220:8080';
+const String _publicBackendBaseUrl = 'https://115.120.241.220';
 
 const String _baseUrlOverride = String.fromEnvironment(
   'FACECHECK_BASE_URL',
