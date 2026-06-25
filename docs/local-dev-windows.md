@@ -56,7 +56,7 @@ The start script sets these variables only for that PowerShell process:
 - `DB_USERNAME=facecheck`
 - `DB_PASSWORD=facecheck`
 - `REDIS_HOST=localhost`
-- `REDIS_PORT=6379`
+- `REDIS_PORT=26379`
 - `RABBITMQ_HOST=localhost`
 - `RABBITMQ_PORT=5672`
 - `RABBITMQ_USERNAME=facecheck`
@@ -171,6 +171,7 @@ The example file uses Maven Central by default and keeps an optional HTTPS Aliyu
 
 ## Health Check Addresses
 
+- Default Flutter app backend: `http://115.120.241.220:8080`
 - Windows browser or PowerShell: `http://localhost:8080/api/health`
-- Android Emulator: `http://10.0.2.2:8080`
-- Android real device: use the Windows host LAN IP instead of `localhost`
+- Android Emulator to local backend: override with `FACECHECK_BASE_URL=http://10.0.2.2:8080`
+- Android real device to local backend: use the Windows host LAN IP instead of `localhost`

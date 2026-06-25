@@ -6,6 +6,7 @@ import com.facecheck.face.MockFaceRecognitionProvider;
 import com.facecheck.infrastructure.huawei.HuaweiFrsClient;
 import com.facecheck.storage.HuaweiObsStorageService;
 import com.facecheck.storage.HuaweiObsStorageServiceImpl;
+import com.facecheck.storage.InMemoryHuaweiObsStorageService;
 import com.facecheck.storage.ObjectKeyStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,10 @@ public class HuaweiCloudConfig {
             HuaweiCloudProperties properties,
             ObjectKeyStrategy objectKeyStrategy
     ) {
-        return new HuaweiObsStorageServiceImpl(properties, objectKeyStrategy);
+        if (properties.isObsEnabled() || properties.isEnabled()) {
+            return new HuaweiObsStorageServiceImpl(properties, objectKeyStrategy);
+        }
+        return new InMemoryHuaweiObsStorageService(properties, objectKeyStrategy);
     }
 
     @Bean

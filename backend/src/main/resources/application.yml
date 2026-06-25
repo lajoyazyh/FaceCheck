@@ -52,6 +52,7 @@ facecheck:
       expires-minutes: ${JWT_EXPIRES_MINUTES:120}
   huawei:
     enabled: ${HUAWEI_CLOUD_ENABLED:false}
+    obs-enabled: ${OBS_ENABLED:false}
     ak: ${FRS_AK:}
     sk: ${FRS_SK:}
     project-id: ${FRS_PROJECT_ID:}

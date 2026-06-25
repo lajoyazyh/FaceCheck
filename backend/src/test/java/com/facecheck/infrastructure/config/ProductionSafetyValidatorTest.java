@@ -37,12 +37,34 @@ class ProductionSafetyValidatorTest {
                         "spring.data.redis.password=strong-redis-password",
                         "spring.rabbitmq.password=strong-rabbit-password",
                         "facecheck.huawei.enabled=true",
+                        "facecheck.huawei.obs-enabled=false",
                         "facecheck.huawei.face-set-name=facecheck-prod"
                 )
                 .run(context -> {
                     assertThat(context).hasFailed();
                     assertThat(context.getStartupFailure())
                             .hasMessageContaining("FRS_AK");
+                });
+    }
+
+    @Test
+    void shouldRejectEnabledObsWithoutRequiredObsSettings() {
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "facecheck.security.jwt.secret=0123456789abcdef0123456789abcdef",
+                        "spring.datasource.password=strong-db-password",
+                        "spring.data.redis.password=strong-redis-password",
+                        "spring.rabbitmq.password=strong-rabbit-password",
+                        "facecheck.huawei.enabled=false",
+                        "facecheck.huawei.obs-enabled=true",
+                        "facecheck.huawei.ak=test-ak",
+                        "facecheck.huawei.sk=test-sk"
+                )
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    assertThat(context.getStartupFailure())
+                            .hasMessageContaining("OBS_ENDPOINT");
                 });
     }
 
@@ -55,7 +77,8 @@ class ProductionSafetyValidatorTest {
                         "spring.datasource.password=strong-db-password",
                         "spring.data.redis.password=strong-redis-password",
                         "spring.rabbitmq.password=strong-rabbit-password",
-                        "facecheck.huawei.enabled=false"
+                        "facecheck.huawei.enabled=false",
+                        "facecheck.huawei.obs-enabled=false"
                 )
                 .run(context -> assertThat(context).hasNotFailed());
     }
@@ -69,7 +92,8 @@ class ProductionSafetyValidatorTest {
                         "spring.datasource.password=strong-db-password",
                         "spring.data.redis.password=facecheck",
                         "spring.rabbitmq.password=strong-rabbit-password",
-                        "facecheck.huawei.enabled=false"
+                        "facecheck.huawei.enabled=false",
+                        "facecheck.huawei.obs-enabled=false"
                 )
                 .run(context -> {
                     assertThat(context).hasFailed();

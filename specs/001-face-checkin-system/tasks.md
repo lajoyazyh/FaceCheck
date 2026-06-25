@@ -285,7 +285,7 @@ description: "Task list for 管理员场次人脸签到系统 implementation"
 ### Phase 11 Risk Closure Notes
 
 - Phase 11 risk closure moved local seed data out of `db/migration` and into `db/local`, so the default production Flyway path no longer sees test accounts or demo attendance data.
-- Android emulator validation keeps `10.0.2.2:8080` as the first choice and documents `adb reverse + FACECHECK_BASE_URL=http://127.0.0.1:8080` as the fallback when direct host access is unstable.
+- Flutter App now defaults to the deployed backend `http://115.120.241.220:8080`; Android emulator validation can still target local backend with `FACECHECK_BASE_URL=http://10.0.2.2:8080`, or `adb reverse + FACECHECK_BASE_URL=http://127.0.0.1:8080` as the fallback when direct host access is unstable.
 - Anonymous Android smoke now covers seed session loading, Chinese prompt rendering, Chinese network-failure copy, and the submit entry point before camera/upload manual steps.
 - Unused `TestDataFactory` was removed during risk closure to avoid stale test-only assets without consumers.
 

@@ -19,7 +19,7 @@ docker compose ps
 本地默认账号与端口：
 
 - PostgreSQL：`facecheck/facecheck@localhost:5432/facecheck`
-- Redis：`localhost:6379`
+- Redis：`localhost:26379`
 - RabbitMQ：`facecheck/facecheck@localhost:5672`
 
 ## 3. 启动后端
@@ -73,14 +73,26 @@ docker compose up -d postgres redis rabbitmq
 
 ## 5. 启动 Flutter App
 
-### Android 模拟器
+### 默认远程后端
 
-当 Windows 后端已经启动、且 Android Emulator 能稳定访问宿主机时，优先直接使用 `http://10.0.2.2:8080`，不需要改代码：
+当前 Flutter App 默认连接已部署后端 `http://115.120.241.220:8080`。如果只是验证线上环境，不需要改代码或追加 `--dart-define`：
 
 ```powershell
 cd C:\Users\alvinding\Desktop\FaceCheck\app
 C:\Users\alvinding\flutter\bin\flutter.bat devices
 C:\Users\alvinding\flutter\bin\flutter.bat run -d <emulatorDeviceId>
+```
+
+### Android 模拟器连接本地后端
+
+如果要让 Android 模拟器访问 Windows 本机后端，请显式覆盖 base URL：
+
+```powershell
+cd C:\Users\alvinding\Desktop\FaceCheck\app
+C:\Users\alvinding\flutter\bin\flutter.bat run `
+  -d <emulatorDeviceId> `
+  --dart-define=FACECHECK_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=FACECHECK_LOCAL_BACKEND_HOSTS=10.0.2.2,127.0.0.1,localhost
 ```
 
 如果模拟器访问 `10.0.2.2:8080` 出现 `Connection closed before full header was received`、连接被重置，或 Android smoke 在预检阶段拿不到完整 HTTP 响应，再改用 `adb reverse` fallback：
@@ -94,7 +106,7 @@ C:\Users\alvinding\flutter\bin\flutter.bat run `
   --dart-define=FACECHECK_LOCAL_BACKEND_HOSTS=127.0.0.1,10.0.2.2,localhost
 ```
 
-### Android 真机
+### Android 真机连接本地后端
 
 真机不能使用 `127.0.0.1` 或 `10.0.2.2`，必须改为 Windows 主机局域网地址，但不需要改源码，直接用 `--dart-define`：
 
@@ -131,13 +143,13 @@ cd C:\Users\alvinding\Desktop\FaceCheck\app
 C:\Users\alvinding\flutter\bin\flutter.bat test integration_test/admin_android_smoke_test.dart -d <androidDeviceId>
 ```
 
-如果模拟器 smoke 需要走 fallback，匿名和管理员两条命令都追加 `--dart-define=FACECHECK_BASE_URL=http://127.0.0.1:8080`，并确保已执行 `adb reverse tcp:8080 tcp:8080`。
+如果 smoke 要连接本地后端，匿名和管理员两条命令都追加对应 `--dart-define=FACECHECK_BASE_URL=...`。如果模拟器 smoke 需要走 `adb reverse` fallback，则追加 `--dart-define=FACECHECK_BASE_URL=http://127.0.0.1:8080`，并确保已执行 `adb reverse tcp:8080 tcp:8080`。
 
 ## 7. 推荐联调顺序
 
 1. `docker compose up -d postgres redis rabbitmq`
 2. `.\mvnw.cmd spring-boot:run`
 3. `curl.exe http://localhost:8080/api/health`
-4. Android 模拟器启动 App
+4. Android 模拟器启动 App；默认连接 `http://115.120.241.220:8080`
 5. 用 `admin / Admin123!` 登录并跑管理员 smoke
 6. 用 `alice / user123!!` 登录并验证普通用户权限边界

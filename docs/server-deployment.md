@@ -72,7 +72,9 @@ systemctl reload nginx
 
 ## 5. 当前限制
 
-- 当前仓库里的华为云 FRS/OBS 生产适配器仍是占位或 mock 形态，所以 `HUAWEI_CLOUD_ENABLED` 暂时应保持 `false`。
-- 一旦未来补齐真实生产适配器，再把 `/etc/facecheck/facecheck.env` 里的华为云相关配置打开。
+- 当前仓库里的华为云 FRS 生产适配器仍未完成，所以 `HUAWEI_CLOUD_ENABLED` 暂时应保持 `false`。
+- OBS 生产适配器已经接入 Huawei OBS SDK。若服务器 `/etc/facecheck/facecheck.env` 已配置 `FRS_AK`、`FRS_SK`、`OBS_ENDPOINT`、`OBS_REGION`、`OBS_BUCKET`，可以单独设置 `OBS_ENABLED=true` 做真实对象存储验证。
+- 真实 AK/SK、JWT_SECRET、数据库密码只应写入服务器本地 `/etc/facecheck/facecheck.env` 或部署平台 secret，不要写入 git 跟踪文件，也不要直接发到聊天记录里。
+- 一旦未来补齐真实 FRS 生产适配器，再把 `/etc/facecheck/facecheck.env` 里的 FRS 相关配置打开。
 - 首次自动生成 `/etc/facecheck/facecheck.env` 后，建议核对 `FACECHECK_BACKEND_HOST_PORT`、
   `DB_URL`、`REDIS_HOST`、`RABBITMQ_HOST` 和 JWT/数据库密码是否符合当前服务器规划。

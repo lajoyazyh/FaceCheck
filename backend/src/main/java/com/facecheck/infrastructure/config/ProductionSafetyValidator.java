@@ -21,6 +21,7 @@ public class ProductionSafetyValidator implements InitializingBean {
     private final String redisPassword;
     private final String rabbitPassword;
     private final boolean huaweiEnabled;
+    private final boolean obsEnabled;
     private final String frsAk;
     private final String frsSk;
     private final String frsProjectId;
@@ -38,6 +39,7 @@ public class ProductionSafetyValidator implements InitializingBean {
             @Value("${spring.data.redis.password:}") String redisPassword,
             @Value("${spring.rabbitmq.password:}") String rabbitPassword,
             @Value("${facecheck.huawei.enabled:false}") boolean huaweiEnabled,
+            @Value("${facecheck.huawei.obs-enabled:false}") boolean obsEnabled,
             @Value("${facecheck.huawei.ak:}") String frsAk,
             @Value("${facecheck.huawei.sk:}") String frsSk,
             @Value("${facecheck.huawei.project-id:}") String frsProjectId,
@@ -54,6 +56,7 @@ public class ProductionSafetyValidator implements InitializingBean {
         this.redisPassword = redisPassword;
         this.rabbitPassword = rabbitPassword;
         this.huaweiEnabled = huaweiEnabled;
+        this.obsEnabled = obsEnabled;
         this.frsAk = frsAk;
         this.frsSk = frsSk;
         this.frsProjectId = frsProjectId;
@@ -96,24 +99,27 @@ public class ProductionSafetyValidator implements InitializingBean {
     }
 
     private void validateHuaweiSettings(List<String> issues) {
-        if (!huaweiEnabled) {
+        if (!huaweiEnabled && !obsEnabled) {
             return;
         }
 
         require("FRS_AK", frsAk, issues);
         require("FRS_SK", frsSk, issues);
-        require("FRS_PROJECT_ID", frsProjectId, issues);
-        require("FRS_REGION", frsRegion, issues);
-        require("FRS_ENDPOINT", frsEndpoint, issues);
         require("OBS_ENDPOINT", obsEndpoint, issues);
         require("OBS_REGION", obsRegion, issues);
         require("OBS_BUCKET", obsBucket, issues);
-        require("FRS_FACE_SET_NAME", faceSetName, issues);
+
+        if (huaweiEnabled) {
+            require("FRS_PROJECT_ID", frsProjectId, issues);
+            require("FRS_REGION", frsRegion, issues);
+            require("FRS_ENDPOINT", frsEndpoint, issues);
+            require("FRS_FACE_SET_NAME", faceSetName, issues);
+        }
     }
 
     private void require(String variableName, String value, List<String> issues) {
         if (!StringUtils.hasText(value)) {
-            issues.add(variableName + " is required when HUAWEI_CLOUD_ENABLED=true");
+            issues.add(variableName + " is required when HUAWEI_CLOUD_ENABLED=true or OBS_ENABLED=true");
         }
     }
 }

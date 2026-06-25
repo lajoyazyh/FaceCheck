@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class HuaweiCloudProperties {
 
     private boolean enabled;
+    private boolean obsEnabled;
     private String ak;
     private String sk;
     private String projectId;
@@ -23,6 +24,14 @@ public class HuaweiCloudProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isObsEnabled() {
+        return obsEnabled;
+    }
+
+    public void setObsEnabled(boolean obsEnabled) {
+        this.obsEnabled = obsEnabled;
     }
 
     public String getAk() {

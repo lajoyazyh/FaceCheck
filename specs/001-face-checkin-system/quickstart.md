@@ -13,7 +13,7 @@
 本地默认配置与 [.env.example](/mnt/c/Users/alvinding/desktop/FaceCheck/.env.example:1) 保持一致：
 
 - PostgreSQL：`facecheck/facecheck@localhost:5432/facecheck`
-- Redis：`localhost:6379`
+- Redis：`localhost:26379`
 - RabbitMQ：`facecheck/facecheck@localhost:5672`
 - JWT：本地示例 secret
 - `HUAWEI_CLOUD_ENABLED=false`
@@ -49,11 +49,20 @@ docker compose up -d postgres redis rabbitmq
 
 ## 5. Start Flutter App
 
-Android Emulator 默认直接走 `http://10.0.2.2:8080`：
+Flutter App 默认连接已部署后端 `http://115.120.241.220:8080`：
 
 ```powershell
 cd C:\Users\alvinding\Desktop\FaceCheck\app
 C:\Users\alvinding\flutter\bin\flutter.bat run -d <emulatorDeviceId>
+```
+
+如果要让 Android Emulator 连接本机后端，显式覆盖 base URL：
+
+```powershell
+C:\Users\alvinding\flutter\bin\flutter.bat run `
+  -d <emulatorDeviceId> `
+  --dart-define=FACECHECK_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=FACECHECK_LOCAL_BACKEND_HOSTS=10.0.2.2,127.0.0.1,localhost
 ```
 
 如果模拟器直连 `10.0.2.2:8080` 不稳定，或 Android smoke 预检出现 `Connection closed before full header was received`，可切到 Phase 11 验证过的 fallback：
@@ -67,7 +76,7 @@ C:\Users\alvinding\flutter\bin\flutter.bat run `
   --dart-define=FACECHECK_LOCAL_BACKEND_HOSTS=127.0.0.1,10.0.2.2,localhost
 ```
 
-Android 真机必须使用 Windows 主机局域网 IP，通过 `--dart-define` 切换 base URL，不改源码：
+Android 真机如果要连接本地后端，必须使用 Windows 主机局域网 IP，通过 `--dart-define` 切换 base URL，不改源码：
 
 ```powershell
 C:\Users\alvinding\flutter\bin\flutter.bat run `

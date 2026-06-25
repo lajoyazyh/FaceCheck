@@ -70,6 +70,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRES_MINUTES: ${JWT_EXPIRES_MINUTES:-120}
       HUAWEI_CLOUD_ENABLED: ${HUAWEI_CLOUD_ENABLED:-false}
+      OBS_ENABLED: ${OBS_ENABLED:-false}
       FRS_AK: ${FRS_AK:-}
       FRS_SK: ${FRS_SK:-}
       FRS_PROJECT_ID: ${FRS_PROJECT_ID:-}
