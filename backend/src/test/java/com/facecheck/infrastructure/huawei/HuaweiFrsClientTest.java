@@ -8,8 +8,8 @@ import com.huaweicloud.sdk.core.exception.ServiceResponseException;
 import com.huaweicloud.sdk.frs.v2.FrsClient;
 import com.huaweicloud.sdk.frs.v2.model.AddFacesByBase64Request;
 import com.huaweicloud.sdk.frs.v2.model.AddFacesByBase64Response;
-import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByFaceIdRequest;
-import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByFaceIdResponse;
+import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByExternalImageIdRequest;
+import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByExternalImageIdResponse;
 import com.huaweicloud.sdk.frs.v2.model.DetectFace;
 import com.huaweicloud.sdk.frs.v2.model.DetectFaceByBase64Request;
 import com.huaweicloud.sdk.frs.v2.model.DetectFaceByBase64Response;
@@ -107,16 +107,16 @@ class HuaweiFrsClientTest {
     }
 
     @Test
-    void shouldDeleteByFaceId() {
+    void shouldDeleteByExternalImageId() {
         StubFrsClient sdk = new StubFrsClient();
-        sdk.deleteResponse = new DeleteFaceByFaceIdResponse().withXRequestId("delete-req");
+        sdk.deleteResponse = new DeleteFaceByExternalImageIdResponse().withXRequestId("delete-req");
 
         HuaweiFrsClient client = new HuaweiFrsClient(properties, sdk);
 
-        client.delete("face-1");
+        client.deleteByExternalImageId("photo-1");
 
         assertThat(sdk.deleteRequest.getFaceSetName()).isEqualTo("facecheck-default");
-        assertThat(sdk.deleteRequest.getFaceId()).isEqualTo("face-1");
+        assertThat(sdk.deleteRequest.getExternalImageId()).isEqualTo("photo-1");
     }
 
     @Test
@@ -148,8 +148,8 @@ class HuaweiFrsClientTest {
         private AddFacesByBase64Response addResponse;
         private SearchFaceByBase64Request searchRequest;
         private SearchFaceByBase64Response searchResponse;
-        private DeleteFaceByFaceIdRequest deleteRequest;
-        private DeleteFaceByFaceIdResponse deleteResponse;
+        private DeleteFaceByExternalImageIdRequest deleteRequest;
+        private DeleteFaceByExternalImageIdResponse deleteResponse;
 
         private StubFrsClient() {
             super(null);
@@ -177,7 +177,7 @@ class HuaweiFrsClientTest {
         }
 
         @Override
-        public DeleteFaceByFaceIdResponse deleteFaceByFaceId(DeleteFaceByFaceIdRequest request) {
+        public DeleteFaceByExternalImageIdResponse deleteFaceByExternalImageId(DeleteFaceByExternalImageIdRequest request) {
             this.deleteRequest = request;
             return deleteResponse;
         }

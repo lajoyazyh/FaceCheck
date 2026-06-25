@@ -40,6 +40,6 @@ public class MockFaceRecognitionProvider implements FaceRecognitionProvider {
     }
 
     @Override
-    public void deleteFace(String faceId) {
+    public void deleteFace(String externalImageId) {
     }
 }

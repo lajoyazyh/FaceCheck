@@ -73,7 +73,7 @@ class HuaweiCloudFrsFaceRecognitionProviderTest {
         }
 
         @Override
-        public void delete(String faceId) {
+        public void deleteByExternalImageId(String externalImageId) {
         }
     }
 

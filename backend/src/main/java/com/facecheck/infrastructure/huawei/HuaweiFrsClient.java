@@ -13,7 +13,7 @@ import com.huaweicloud.sdk.frs.v2.FrsClient;
 import com.huaweicloud.sdk.frs.v2.model.AddFacesBase64Req;
 import com.huaweicloud.sdk.frs.v2.model.AddFacesByBase64Request;
 import com.huaweicloud.sdk.frs.v2.model.AddFacesByBase64Response;
-import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByFaceIdRequest;
+import com.huaweicloud.sdk.frs.v2.model.DeleteFaceByExternalImageIdRequest;
 import com.huaweicloud.sdk.frs.v2.model.DetectFaceByBase64Request;
 import com.huaweicloud.sdk.frs.v2.model.DetectFaceByBase64Response;
 import com.huaweicloud.sdk.frs.v2.model.FaceDetectBase64Req;
@@ -124,12 +124,12 @@ public class HuaweiFrsClient {
         }
     }
 
-    public void delete(String faceId) {
+    public void deleteByExternalImageId(String externalImageId) {
         try {
-            client().deleteFaceByFaceId(
-                    new DeleteFaceByFaceIdRequest()
+            client().deleteFaceByExternalImageId(
+                    new DeleteFaceByExternalImageIdRequest()
                             .withFaceSetName(faceSetName())
-                            .withFaceId(faceId)
+                            .withExternalImageId(externalImageId)
             );
         } catch (RuntimeException exception) {
             throw mapException("DeleteFace", exception);

@@ -13,7 +13,7 @@ public interface FaceRecognitionProvider {
 
     CompareFaceResult compareFace(byte[] imageBytes, String faceId);
 
-    void deleteFace(String faceId);
+    void deleteFace(String externalImageId);
 
     record DetectFaceResult(int faceCount, boolean acceptable, String failureCode, String requestId) {
     }
