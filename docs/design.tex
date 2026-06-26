@@ -35,6 +35,7 @@
 % ========== 表格 ==========
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{tabularx}
 
 % ========== 页眉页脚 ==========
 \usepackage{fancyhdr}
@@ -222,51 +223,51 @@
 \caption{核心实体概览}
 \label{tab:entities}
 \footnotesize
-\begin{tabular}{@{}>{\ttfamily}l p{4cm} p{3.8cm} @{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
 \toprule
 实体 & 关键字段 & 约束/状态 \\
 \midrule
 User & username, password\_hash, role, status, lastLoginAt &
-  表名 user\_account，ROLE: USER|ADMIN，STATUS: ACTIVE|LOCKED|DISABLED \\
+  表名 \texttt{user\_account}\newline ROLE: \texttt{USER|ADMIN}\newline STATUS: \texttt{ACTIVE|LOCKED|DISABLED} \\
 
 FacePhoto & obsBucket, obsRegion, obsObjectKey, contentType,
            sizeBytes, sha256, storageProvider, detectStatus,
            registerStatus, failureReason, failureCode &
-  DETECT: PENDING|PASSED|FAILED，REGISTER: PENDING|ACTIVE|FAILED|DELETE\_PENDING|DELETE\_FAILED|DELETED \\
+  DETECT: \texttt{PENDING|PASSED|FAILED}\newline REGISTER: \texttt{PENDING|ACTIVE|FAILED}\newline \texttt{DELETE\_PENDING}\newline \texttt{DELETE\_FAILED|DELETED} \\
 
 HuaweiFaceRef & userId, facePhotoId, faceSetName, frsFaceId,
                 externalImageId, externalFields(JSONB), status &
-  STATUS: ACTIVE|DELETE\_PENDING|DELETE\_FAILED|DELETED|ORPHANED \\
+  STATUS: \texttt{ACTIVE|DELETE\_PENDING}\newline \texttt{DELETE\_FAILED}\newline \texttt{DELETED|ORPHANED} \\
 
-AttendanceSession & name, description, startTime, endTime,
+Attendance\newline Session & name, description, startTime, endTime,
                      lateAfterTime, status, qrToken &
-  STATUS: DRAFT|PUBLISHED|CLOSED|CANCELED，qrToken 高熵唯一 \\
+  STATUS: \texttt{DRAFT|PUBLISHED}\newline \texttt{CLOSED|CANCELED}\newline qrToken 高熵唯一 \\
 
-AttendanceCheckinAttempt & obsBucket, obsRegion, obsObjectKey,
+Attendance\newline Checkin\newline Attempt & obsBucket, obsRegion, obsObjectKey,
                             contentType, sizeBytes, sha256,
                             status, resultCode, failureReason,
                             frsRequestId, matchedUserId, similarity,
                             idempotencyKey, reviewed &
-  STATUS: PROCESSING|SUCCESS|FAILED|DUPLICATE\_CHECKIN，\\
+  STATUS: \texttt{PROCESSING|SUCCESS|FAILED}\newline \texttt{DUPLICATE\_CHECKIN}，\newline
   UK(session\_id, idempotency\_key) \\
 
-AttendanceRecord & sessionId, userId, attemptId, checkinTime,
+Attendance\newline Record & sessionId, userId, attemptId, checkinTime,
                    status, similarity, source &
-  STATUS: VALID|MANUAL\_CONFIRMED，SRC: APP\_QR\_ANON|ADMIN\_RETRY，\\
+  STATUS: \texttt{VALID|MANUAL\_CONFIRMED}\newline SRC: \texttt{APP\_QR\_ANON|ADMIN\_RETRY}，\newline
   UK(session\_id, user\_id) + UK(attempt\_id) \\
 
 AuditLog & actorUserId, actorRole, action, targetType,
           targetId, summary, detailJson(JSONB) & 管理员关键操作审计 \\
 
-ExternalServiceCallLog & serviceName, operation, requestId,
+ExternalService\newline CallLog & serviceName, operation, requestId,
                           status, latencyMs, errorCode &
-  SVC: HUAWEI\_FRS|HUAWEI\_OBS，STATUS: SUCCESS|FAILED|TIMEOUT|RATE\_LIMITED|RETRYING \\
+  SVC: \texttt{HUAWEI\_FRS|HUAWEI\_OBS}\newline STATUS: \texttt{SUCCESS|FAILED|TIMEOUT}\newline \texttt{RATE\_LIMITED|RETRYING} \\
 
 SystemConfig & configKey, configValue, valueType, description &
-  TYPE: STRING|NUMBER|BOOLEAN|JSON，白名单配置管理 \\
+  TYPE: \texttt{STRING|NUMBER|BOOLEAN|JSON}\newline 白名单配置管理 \\
 
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \subsection{关键约束}
@@ -335,7 +336,7 @@ SystemConfig & configKey, configValue, valueType, description &
 \centering
 \caption{签到结果码}
 \label{tab:result-codes}
-\begin{tabular}{@{}ll@{}}
+\begin{tabularx}{\textwidth}{@{}p{2.6cm} >{\raggedright\arraybackslash}X@{}}
 \toprule
 类别 & 结果码 \\
 \midrule
@@ -343,7 +344,7 @@ SystemConfig & configKey, configValue, valueType, description &
 匹配结果 & \texttt{LOW\_CONFIDENCE} \quad \texttt{NO\_MATCH} \quad \texttt{DUPLICATE\_CHECKIN} \quad \texttt{MANUAL\_REVIEW} \\
 服务异常 & \texttt{FRS\_TIMEOUT} \quad \texttt{FRS\_RATE\_LIMITED} \quad \texttt{FRS\_ERROR} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 % ======================================================================
