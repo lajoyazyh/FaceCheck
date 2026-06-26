@@ -27,9 +27,9 @@
 HUAWEI_CLOUD_ENABLED=false
 OBS_ENABLED=true
 
-# 当前后端沿用 FRS_AK / FRS_SK 作为华为云 AK/SK 配置来源。
-FRS_AK=<your-huawei-cloud-ak>
-FRS_SK=<your-huawei-cloud-sk>
+# OBS uses credentials separate from FRS credentials.
+OBS_AK=<your-obs-ak>
+OBS_SK=<your-obs-sk>
 
 OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com
 OBS_REGION=cn-east-3
@@ -54,6 +54,8 @@ FRS_ENDPOINT=<your-frs-endpoint>
 FRS_FACE_SET_NAME=facecheck-default
 FRS_SIMILARITY_THRESHOLD=85
 
+OBS_AK=<your-obs-ak>
+OBS_SK=<your-obs-sk>
 OBS_ENDPOINT=<your-obs-endpoint>
 OBS_REGION=<your-obs-region>
 OBS_BUCKET=<your-obs-bucket>
@@ -65,8 +67,10 @@ OBS_BUCKET=<your-obs-bucket>
 |------|--------------|------|----------|
 | `HUAWEI_CLOUD_ENABLED` | 是 | FRS 总开关；本地 mock 调试时保持 `false`，真实 FRS 验证时设为 `true` | `false` |
 | `OBS_ENABLED` | 是 | OBS 独立开关；只验证真实 OBS 时设为 `true` | `true` |
-| `FRS_AK` | 开启 OBS 或 FRS 时必填 | 华为云访问密钥 AK；当前 OBS 也复用该字段 | 不写入文档或 git |
-| `FRS_SK` | 开启 OBS 或 FRS 时必填 | 华为云访问密钥 SK；当前 OBS 也复用该字段 | 不写入文档或 git |
+| `FRS_AK` | 仅开启 FRS 时必填 | FRS 所属账号的访问密钥 AK | 不写入文档或 git |
+| `FRS_SK` | 仅开启 FRS 时必填 | FRS 所属账号的访问密钥 SK | 不写入文档或 git |
+| `OBS_AK` | 开启 OBS 时必填 | OBS bucket 所属账号的访问密钥 AK | 不写入文档或 git |
+| `OBS_SK` | 开启 OBS 时必填 | OBS bucket 所属账号的访问密钥 SK | 不写入文档或 git |
 | `OBS_ENDPOINT` | 开启 OBS 或 FRS 时必填 | OBS endpoint | `https://obs.cn-east-3.myhuaweicloud.com` |
 | `OBS_REGION` | 开启 OBS 或 FRS 时必填 | OBS bucket 所在 region | `cn-east-3` |
 | `OBS_BUCKET` | 开启 OBS 或 FRS 时必填 | 存放人脸照片和签到照片的 bucket 名称 | `yunjisuan-zyh` |
@@ -86,7 +90,7 @@ OBS_REGION=cn-east-3
 OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com
 ```
 
-仍需由有华为云权限的同学或服务器管理员在服务器本地 `/etc/facecheck/facecheck.env` 中填写真实 `FRS_AK` / `FRS_SK`，并确认 `FRS_PROJECT_ID`、`FRS_REGION`、`FRS_ENDPOINT`、`FRS_FACE_SET_NAME` 与华为云控制台一致。
+仍需由有华为云权限的同学或服务器管理员在服务器本地 `/etc/facecheck/facecheck.env` 中分别填写真实 `FRS_AK` / `FRS_SK` 与 `OBS_AK` / `OBS_SK`，并确认 `FRS_PROJECT_ID`、`FRS_REGION`、`FRS_ENDPOINT`、`FRS_FACE_SET_NAME` 与华为云控制台一致。
 
 ## 3. 安全边界
 

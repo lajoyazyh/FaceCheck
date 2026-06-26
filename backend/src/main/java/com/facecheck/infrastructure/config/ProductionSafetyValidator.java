@@ -24,6 +24,8 @@ public class ProductionSafetyValidator implements InitializingBean {
     private final boolean obsEnabled;
     private final String frsAk;
     private final String frsSk;
+    private final String obsAk;
+    private final String obsSk;
     private final String frsProjectId;
     private final String frsRegion;
     private final String frsEndpoint;
@@ -42,6 +44,8 @@ public class ProductionSafetyValidator implements InitializingBean {
             @Value("${facecheck.huawei.obs-enabled:false}") boolean obsEnabled,
             @Value("${facecheck.huawei.ak:}") String frsAk,
             @Value("${facecheck.huawei.sk:}") String frsSk,
+            @Value("${facecheck.huawei.obs-ak:}") String obsAk,
+            @Value("${facecheck.huawei.obs-sk:}") String obsSk,
             @Value("${facecheck.huawei.project-id:}") String frsProjectId,
             @Value("${facecheck.huawei.region:}") String frsRegion,
             @Value("${facecheck.huawei.frs-endpoint:}") String frsEndpoint,
@@ -59,6 +63,8 @@ public class ProductionSafetyValidator implements InitializingBean {
         this.obsEnabled = obsEnabled;
         this.frsAk = frsAk;
         this.frsSk = frsSk;
+        this.obsAk = obsAk;
+        this.obsSk = obsSk;
         this.frsProjectId = frsProjectId;
         this.frsRegion = frsRegion;
         this.frsEndpoint = frsEndpoint;
@@ -103,23 +109,28 @@ public class ProductionSafetyValidator implements InitializingBean {
             return;
         }
 
-        require("FRS_AK", frsAk, issues);
-        require("FRS_SK", frsSk, issues);
-        require("OBS_ENDPOINT", obsEndpoint, issues);
-        require("OBS_REGION", obsRegion, issues);
-        require("OBS_BUCKET", obsBucket, issues);
-
         if (huaweiEnabled) {
-            require("FRS_PROJECT_ID", frsProjectId, issues);
-            require("FRS_REGION", frsRegion, issues);
-            require("FRS_ENDPOINT", frsEndpoint, issues);
-            require("FRS_FACE_SET_NAME", faceSetName, issues);
+            require("FRS_AK", frsAk, "HUAWEI_CLOUD_ENABLED=true", issues);
+            require("FRS_SK", frsSk, "HUAWEI_CLOUD_ENABLED=true", issues);
+            require("FRS_PROJECT_ID", frsProjectId, "HUAWEI_CLOUD_ENABLED=true", issues);
+            require("FRS_REGION", frsRegion, "HUAWEI_CLOUD_ENABLED=true", issues);
+            require("FRS_ENDPOINT", frsEndpoint, "HUAWEI_CLOUD_ENABLED=true", issues);
+            require("FRS_FACE_SET_NAME", faceSetName, "HUAWEI_CLOUD_ENABLED=true", issues);
+        }
+
+        if (obsEnabled || huaweiEnabled) {
+            String enabledBy = huaweiEnabled ? "HUAWEI_CLOUD_ENABLED=true" : "OBS_ENABLED=true";
+            require("OBS_AK", obsAk, enabledBy, issues);
+            require("OBS_SK", obsSk, enabledBy, issues);
+            require("OBS_ENDPOINT", obsEndpoint, enabledBy, issues);
+            require("OBS_REGION", obsRegion, enabledBy, issues);
+            require("OBS_BUCKET", obsBucket, enabledBy, issues);
         }
     }
 
-    private void require(String variableName, String value, List<String> issues) {
+    private void require(String variableName, String value, String enabledBy, List<String> issues) {
         if (!StringUtils.hasText(value)) {
-            issues.add(variableName + " is required when HUAWEI_CLOUD_ENABLED=true or OBS_ENABLED=true");
+            issues.add(variableName + " is required when " + enabledBy);
         }
     }
 }

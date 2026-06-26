@@ -102,10 +102,10 @@ public class HuaweiObsStorageServiceImpl implements HuaweiObsStorageService {
     }
 
     private static ObsClient createClient(HuaweiCloudProperties properties) {
-        requireConfigured(properties.getAk(), "FRS_AK");
-        requireConfigured(properties.getSk(), "FRS_SK");
+        requireConfigured(properties.getObsAk(), "OBS_AK");
+        requireConfigured(properties.getObsSk(), "OBS_SK");
         requireConfigured(properties.getObsEndpoint(), "OBS_ENDPOINT");
-        return new ObsClient(properties.getAk(), properties.getSk(), properties.getObsEndpoint());
+        return new ObsClient(properties.getObsAk(), properties.getObsSk(), properties.getObsEndpoint());
     }
 
     private static void requireConfigured(String value, String variableName) {

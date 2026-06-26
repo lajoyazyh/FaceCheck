@@ -9,6 +9,8 @@ public class HuaweiCloudProperties {
     private boolean obsEnabled;
     private String ak;
     private String sk;
+    private String obsAk;
+    private String obsSk;
     private String projectId;
     private String region;
     private String frsEndpoint;
@@ -48,6 +50,22 @@ public class HuaweiCloudProperties {
 
     public void setSk(String sk) {
         this.sk = sk;
+    }
+
+    public String getObsAk() {
+        return obsAk;
+    }
+
+    public void setObsAk(String obsAk) {
+        this.obsAk = obsAk;
+    }
+
+    public String getObsSk() {
+        return obsSk;
+    }
+
+    public void setObsSk(String obsSk) {
+        this.obsSk = obsSk;
     }
 
     public String getProjectId() {

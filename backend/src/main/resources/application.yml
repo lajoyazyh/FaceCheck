@@ -58,6 +58,8 @@ facecheck:
     obs-enabled: ${OBS_ENABLED:false}
     ak: ${FRS_AK:}
     sk: ${FRS_SK:}
+    obs-ak: ${OBS_AK:}
+    obs-sk: ${OBS_SK:}
     project-id: ${FRS_PROJECT_ID:}
     region: ${FRS_REGION:}
     frs-endpoint: ${FRS_ENDPOINT:}

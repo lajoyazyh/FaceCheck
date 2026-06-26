@@ -58,14 +58,34 @@ class ProductionSafetyValidatorTest {
                         "spring.rabbitmq.password=strong-rabbit-password",
                         "facecheck.huawei.enabled=false",
                         "facecheck.huawei.obs-enabled=true",
-                        "facecheck.huawei.ak=test-ak",
-                        "facecheck.huawei.sk=test-sk"
+                        "facecheck.huawei.obs-ak=test-obs-ak",
+                        "facecheck.huawei.obs-sk=test-obs-sk"
                 )
                 .run(context -> {
                     assertThat(context).hasFailed();
                     assertThat(context.getStartupFailure())
                             .hasMessageContaining("OBS_ENDPOINT");
                 });
+    }
+
+    @Test
+    void shouldAllowObsOnlyConfigurationWithObsSpecificCredentials() {
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "facecheck.security.jwt.secret=0123456789abcdef0123456789abcdef",
+                        "spring.datasource.password=strong-db-password",
+                        "spring.data.redis.password=strong-redis-password",
+                        "spring.rabbitmq.password=strong-rabbit-password",
+                        "facecheck.huawei.enabled=false",
+                        "facecheck.huawei.obs-enabled=true",
+                        "facecheck.huawei.obs-ak=test-obs-ak",
+                        "facecheck.huawei.obs-sk=test-obs-sk",
+                        "facecheck.huawei.obs-endpoint=https://obs.cn-test-1.example.com",
+                        "facecheck.huawei.obs-region=cn-test-1",
+                        "facecheck.huawei.obs-bucket=facecheck-test"
+                )
+                .run(context -> assertThat(context).hasNotFailed());
     }
 
     @Test

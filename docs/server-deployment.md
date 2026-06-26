@@ -78,8 +78,8 @@ systemctl reload nginx
 ## 5. 当前限制
 
 - 华为云 FRS 生产适配器已经接入 Huawei Cloud Java SDK。若服务器 `/etc/facecheck/facecheck.env` 已配置 `FRS_AK`、`FRS_SK`、`FRS_PROJECT_ID`、`FRS_REGION`、`FRS_ENDPOINT`、`FRS_FACE_SET_NAME`，且对应人脸库已在华为云 FRS 中创建，可以设置 `HUAWEI_CLOUD_ENABLED=true` 做真实识别验证。
-- OBS 生产适配器已经接入 Huawei OBS SDK。若服务器 `/etc/facecheck/facecheck.env` 已配置 `FRS_AK`、`FRS_SK`、`OBS_ENDPOINT`、`OBS_REGION`、`OBS_BUCKET`，可以单独设置 `OBS_ENABLED=true` 做真实对象存储验证。
-- 当前项目 OBS 非敏感配置为 `OBS_BUCKET=yunjisuan-zyh`、`OBS_REGION=cn-east-3`、`OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com`；真实 `FRS_AK` / `FRS_SK` 仍需在服务器本地配置。
+- OBS 生产适配器已经接入 Huawei OBS SDK。若服务器 `/etc/facecheck/facecheck.env` 已配置 `OBS_AK`、`OBS_SK`、`OBS_ENDPOINT`、`OBS_REGION`、`OBS_BUCKET`，可以单独设置 `OBS_ENABLED=true` 做真实对象存储验证。
+- 当前项目 OBS 非敏感配置为 `OBS_BUCKET=yunjisuan-zyh`、`OBS_REGION=cn-east-3`、`OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com`；真实 FRS 与 OBS 凭证仍需在服务器本地分别配置。
 - 真实 AK/SK、JWT_SECRET、数据库密码只应写入服务器本地 `/etc/facecheck/facecheck.env` 或部署平台 secret，不要写入 git 跟踪文件，也不要直接发到聊天记录里。
 - 开启 `HUAWEI_CLOUD_ENABLED=true` 前，建议先用小范围人工流程验证：上传 1 张人脸照片、等待注册为 `ACTIVE`、创建 1 个场次、执行 1 次匿名签到。
 - 首次自动生成 `/etc/facecheck/facecheck.env` 后，建议核对 `FACECHECK_BACKEND_HOST_PORT`、

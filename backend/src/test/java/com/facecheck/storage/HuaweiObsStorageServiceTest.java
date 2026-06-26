@@ -1,6 +1,7 @@
 package com.facecheck.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.facecheck.common.error.BusinessException;
@@ -54,8 +55,8 @@ class HuaweiObsStorageServiceTest {
     @Test
     void shouldUseHuaweiObsClientForRealStorageOperations() {
         HuaweiCloudProperties properties = new HuaweiCloudProperties();
-        properties.setAk("test-ak");
-        properties.setSk("test-sk");
+        properties.setObsAk("test-obs-ak");
+        properties.setObsSk("test-obs-sk");
         properties.setObsBucket("facecheck-real-bucket");
         properties.setObsRegion("cn-test-1");
         properties.setObsEndpoint("https://obs.cn-test-1.example.com");
@@ -79,6 +80,17 @@ class HuaweiObsStorageServiceTest {
 
         service.delete(objectKey);
         assertThat(obsClient.deletedObjectKey).isEqualTo(objectKey);
+    }
+
+    @Test
+    void shouldCreateRealObsClientWithObsSpecificCredentials() {
+        HuaweiCloudProperties properties = new HuaweiCloudProperties();
+        properties.setObsAk("test-obs-ak");
+        properties.setObsSk("test-obs-sk");
+        properties.setObsEndpoint("https://obs.cn-test-1.example.com");
+
+        assertThatCode(() -> new HuaweiObsStorageServiceImpl(properties, new ObjectKeyStrategy()))
+                .doesNotThrowAnyException();
     }
 
     private static final class FakeObsClient extends ObsClient {
