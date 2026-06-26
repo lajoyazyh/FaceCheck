@@ -114,7 +114,7 @@ class FacePhotoDeletionServiceTest {
         doNothing().when(storageService).delete(fixture.photo().getObsObjectKey());
         doThrow(new RuntimeException("FRS delete failed"))
                 .when(faceRecognitionProvider)
-                .deleteFace(fixture.ref().getFrsFaceId());
+                .deleteFace(fixture.ref().getExternalImageId());
 
         deletionService.deleteUserPhoto(fixture.user().getId(), fixture.photo().getId());
 
@@ -122,7 +122,7 @@ class FacePhotoDeletionServiceTest {
         assertThat(fixture.photo().getRegisterStatus()).isEqualTo(FaceRegisterStatus.DELETE_FAILED);
         assertThat(fixture.photo().getFailureCode()).isEqualTo("DELETE_COMPENSATION_FAILED");
         assertThat(fixture.ref().getStatus()).isEqualTo(HuaweiFaceRefStatus.DELETE_FAILED);
-        verify(faceRecognitionProvider).deleteFace(fixture.ref().getFrsFaceId());
+        verify(faceRecognitionProvider).deleteFace(fixture.ref().getExternalImageId());
 
         ArgumentCaptor<FacePhotoDeleteCompensationTask> taskCaptor =
                 ArgumentCaptor.forClass(FacePhotoDeleteCompensationTask.class);
