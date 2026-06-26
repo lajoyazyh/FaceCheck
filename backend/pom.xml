@@ -22,6 +22,7 @@
         <docker.api.version>1.41</docker.api.version>
         <testcontainers.version>1.20.1</testcontainers.version>
         <huaweicloud.obs.version>3.25.5</huaweicloud.obs.version>
+        <huaweicloud.sdk.version>3.1.154</huaweicloud.sdk.version>
     </properties>
 
     <dependencies>
@@ -70,6 +71,11 @@
             <groupId>com.huaweicloud</groupId>
             <artifactId>esdk-obs-java-bundle</artifactId>
             <version>${huaweicloud.obs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.huaweicloud.sdk</groupId>
+            <artifactId>huaweicloud-sdk-frs</artifactId>
+            <version>${huaweicloud.sdk.version}</version>
         </dependency>
 
         <dependency>

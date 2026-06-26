@@ -21,7 +21,7 @@
 
 ### 2.1 只验证真实 OBS
 
-当前 FRS 真实接入尚未完成。如果只验证真实对象存储，请保持 FRS 总开关关闭，只打开 OBS：
+如果只验证真实对象存储，请保持 FRS 总开关关闭，只打开 OBS：
 
 ```text
 HUAWEI_CLOUD_ENABLED=false
@@ -38,9 +38,9 @@ OBS_BUCKET=yunjisuan-zyh
 
 只验证 OBS 时暂时不需要填写 `FRS_PROJECT_ID`、`FRS_REGION`、`FRS_ENDPOINT`、`FRS_FACE_SET_NAME`。
 
-### 2.2 后续完整 FRS + OBS 链路
+### 2.2 完整 FRS + OBS 链路
 
-真实 FRS 接入完成后，再打开 FRS 总开关。此时后端会同时要求 FRS 与 OBS 配置完整：
+真实 FRS 适配器已通过华为云 Java SDK 接入。打开 FRS 总开关前，需要先在华为云 FRS 中准备好 `FRS_FACE_SET_NAME` 对应的人脸库；当前后端不会自动创建人脸库。启用后，后端会同时要求 FRS 与 OBS 配置完整：
 
 ```text
 HUAWEI_CLOUD_ENABLED=true
@@ -63,7 +63,7 @@ OBS_BUCKET=<your-obs-bucket>
 
 | 变量 | 当前是否必填 | 用途 | 示例格式 |
 |------|--------------|------|----------|
-| `HUAWEI_CLOUD_ENABLED` | 是 | FRS 总开关；真实 FRS 未完成前保持 `false` | `false` |
+| `HUAWEI_CLOUD_ENABLED` | 是 | FRS 总开关；本地 mock 调试时保持 `false`，真实 FRS 验证时设为 `true` | `false` |
 | `OBS_ENABLED` | 是 | OBS 独立开关；只验证真实 OBS 时设为 `true` | `true` |
 | `FRS_AK` | 开启 OBS 或 FRS 时必填 | 华为云访问密钥 AK；当前 OBS 也复用该字段 | 不写入文档或 git |
 | `FRS_SK` | 开启 OBS 或 FRS 时必填 | 华为云访问密钥 SK；当前 OBS 也复用该字段 | 不写入文档或 git |
@@ -73,7 +73,7 @@ OBS_BUCKET=<your-obs-bucket>
 | `FRS_PROJECT_ID` | 仅开启 FRS 时必填 | 华为云项目 ID | `<project-id>` |
 | `FRS_REGION` | 仅开启 FRS 时必填 | FRS 服务所在 region | `cn-east-3` |
 | `FRS_ENDPOINT` | 仅开启 FRS 时必填 | FRS endpoint | `<frs-endpoint>` |
-| `FRS_FACE_SET_NAME` | 仅开启 FRS 时必填 | FRS 人脸库名称 | `facecheck-default` |
+| `FRS_FACE_SET_NAME` | 仅开启 FRS 时必填 | FRS 人脸库名称；启用前需已存在 | `facecheck-default` |
 | `FRS_SIMILARITY_THRESHOLD` | 否 | 签到识别相似度阈值 | `85` |
 
 不要把真实 AK/SK、JWT_SECRET、数据库密码写进 git 跟踪文件，也不要直接发到聊天里。需要我帮你检查时，可以只发脱敏后的配置形状，例如 `FRS_AK=***abcd`、`OBS_BUCKET=facecheck-prod`。
@@ -86,7 +86,7 @@ OBS_REGION=cn-east-3
 OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com
 ```
 
-仍需由有华为云权限的同学或服务器管理员在服务器本地 `/etc/facecheck/facecheck.env` 中填写真实 `FRS_AK` / `FRS_SK`。
+仍需由有华为云权限的同学或服务器管理员在服务器本地 `/etc/facecheck/facecheck.env` 中填写真实 `FRS_AK` / `FRS_SK`，并确认 `FRS_PROJECT_ID`、`FRS_REGION`、`FRS_ENDPOINT`、`FRS_FACE_SET_NAME` 与华为云控制台一致。
 
 ## 3. 安全边界
 
@@ -98,15 +98,17 @@ OBS_ENDPOINT=https://obs.cn-east-3.myhuaweicloud.com
 
 只做小范围人工验证，不把真实云依赖当默认自动化门禁：
 
-1. 上传 1 张普通用户照片，确认可进入 `ACTIVE`
-2. 用管理员创建 1 个已发布场次
-3. 用匿名签到链路提交 1 次真实照片
-4. 确认 PostgreSQL 中保留 `faceSetName`、`frsFaceId`、`externalRequestId` 等外部引用
-5. 确认系统状态页可看到 FRS / OBS 健康摘要
+1. 在华为云 FRS 控制台确认 `FRS_FACE_SET_NAME` 对应人脸库存在
+2. 上传 1 张普通用户照片，确认可进入 `ACTIVE`
+3. 用管理员创建 1 个已发布场次
+4. 用匿名签到链路提交 1 次真实照片
+5. 确认 PostgreSQL 中保留 `faceSetName`、`frsFaceId`、`externalRequestId` 等外部引用
+6. 确认系统状态页可看到 FRS / OBS 健康摘要
 
 ## 5. 常见注意事项
 
 - 若只做本地 UI / API / Android smoke，不要开启 `HUAWEI_CLOUD_ENABLED=true` 或 `OBS_ENABLED=true`
 - 若只验证真实 OBS，可以只开启 `OBS_ENABLED=true`，并继续保持 `HUAWEI_CLOUD_ENABLED=false`
+- 若开启真实 FRS，必须同时开启真实 OBS；否则照片只存在内存中，后端重启后无法完成后续识别或预览
 - 若真实 FRS 限流或超时，应该得到可追踪失败或人工复核结果，不能静默丢请求
 - OBS 只存对象，不是业务事实源；业务事实源仍然是 PostgreSQL

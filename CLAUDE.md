@@ -3,6 +3,88 @@ For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
 <!-- SPECKIT END -->
 
+## Project Overview
+
+**FaceCheck** — 管理员场次人脸签到系统。管理员创建签到场次并生成 QR 码，普通用户登录后上传人脸照片注册到华为 FRS，匿名用户扫码后拍照提交即可完成人脸比对签到。
+
+### Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Spring Boot 3 monolith, Maven |
+| Face Recognition | Huawei Cloud FRS (人脸识别服务) |
+| Image Storage | Huawei Cloud OBS (对象存储服务) |
+| Database | PostgreSQL (Flyway migrations V1–V4) |
+| Cache / Rate-limit | Redis |
+| Async face registration | RabbitMQ (face.photo.register queue + DLQ) |
+| Mobile App | Flutter (Android target) |
+
+### Key File Locations
+
+```
+backend/src/main/java/com/facecheck/
+  infrastructure/huawei/HuaweiFrsClient.java        # 华为 FRS SDK 封装（detect/enroll/search/compare/delete）
+  infrastructure/huawei/HuaweiFrsException.java      # FRS 专用异常（code / requestId / retryable）
+  infrastructure/config/HuaweiCloudProperties.java   # AK/SK/region/endpoint/faceSetName/threshold 绑定
+  face/HuaweiCloudFrsFaceRecognitionProvider.java    # FaceRecognitionProvider 华为实现
+  face/MockFaceRecognitionProvider.java              # 测试用 Mock 实现
+  face/messaging/FacePhotoRegisterConsumer.java      # RabbitMQ 消费者：异步人脸注册
+  checkin/service/CheckinRecognitionService.java     # 签到时 detect→search→compare 编排
+  storage/HuaweiObsStorageServiceImpl.java           # OBS 上传/删除/预签名 URL
+```
+
+### Current Progress (as of 2026-06-25)
+
+所有阶段 T001–T090 均已标记为 `[X]`（完成）。唯一未完成的任务：
+
+- **T091** `[x]`（小写，待验证）— Android 真机/模拟器端到端测试，需要实际设备。
+
+**本轮未提交的关键变更（git diff HEAD）**：
+
+1. `HuaweiFrsClient.java` — 从仅抛 `UnsupportedOperationException` 的存根，升级为完整的 Huawei FRS SDK 调用实现（detect / enroll / search / compare / delete + 异常分类 + lazy 单例 client）。
+2. `HuaweiFrsException.java` — 新增专用异常类（code / requestId / retryable 三字段）。
+3. `FacePhotoRegisterConsumer.java` — 增加对 `HuaweiFrsException.retryable()` 的分支处理，retryable=true 走重试队列，否则永久失败。
+4. `CheckinRecognitionService.java` — 从 `HuaweiFrsException` 提取 `code` 和 `requestId` 用于签到结果记录。
+5. `backend/pom.xml` — 添加华为 FRS SDK 依赖（`huaweicloud-sdk-frs`）。
+6. `.env.example` / `deploy/facecheck/facecheck.env.example` — 补充 FRS 相关环境变量示例。
+
+### What Remains (Deployment Testing)
+
+后端代码完成但**尚未做真实华为云部署端到端测试**。缺少验证的完整流程：
+
+```
+上传人脸照片
+  → OBS 存储（HuaweiObsStorageServiceImpl）
+  → RabbitMQ 发布注册任务（FacePhotoRegisterPublisher）
+  → FacePhotoRegisterConsumer 消费
+      → HuaweiFrsClient.detect()   # DetectFace API
+      → HuaweiFrsClient.enroll()   # AddFaces API
+      → 写 huawei_face_ref 表（frsFaceId）
+
+扫码签到
+  → CheckinRecognitionService
+      → HuaweiFrsClient.detect()   # 单人脸验证
+      → HuaweiFrsClient.search()   # SearchFace API
+      → HuaweiFrsClient.compare()  # 再次 SearchFace 确认相似度
+      → 写 attendance_record 表
+```
+
+需要用户配置的环境变量（`.env` 或服务器上 `facecheck.env`）：
+
+```
+HUAWEI_AK=
+HUAWEI_SK=
+HUAWEI_PROJECT_ID=
+HUAWEI_REGION=cn-north-4
+HUAWEI_FRS_ENDPOINT=https://face.cn-north-4.myhuaweicloud.com
+HUAWEI_FRS_FACE_SET_NAME=
+HUAWEI_FRS_SIMILARITY_THRESHOLD=0.93
+HUAWEI_OBS_BUCKET=
+HUAWEI_OBS_ENDPOINT=https://obs.cn-north-4.myhuaweicloud.com
+```
+
+---
+
 ## FaceCheck Agent Execution Rules
 
 ### 1. Project Context

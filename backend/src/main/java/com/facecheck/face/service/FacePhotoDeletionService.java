@@ -102,7 +102,7 @@ public class FacePhotoDeletionService {
                 if (ref.getStatus() == HuaweiFaceRefStatus.ACTIVE
                         || ref.getStatus() == HuaweiFaceRefStatus.DELETE_PENDING
                         || ref.getStatus() == HuaweiFaceRefStatus.DELETE_FAILED) {
-                    faceRecognitionProvider.deleteFace(ref.getFrsFaceId());
+                    faceRecognitionProvider.deleteFace(ref.getExternalImageId());
                 }
                 ref.setStatus(HuaweiFaceRefStatus.DELETED);
             }

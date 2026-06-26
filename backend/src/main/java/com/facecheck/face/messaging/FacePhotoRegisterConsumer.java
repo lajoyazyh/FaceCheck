@@ -9,6 +9,7 @@ import com.facecheck.face.model.HuaweiFaceRefStatus;
 import com.facecheck.face.repo.FacePhotoRepository;
 import com.facecheck.face.repo.HuaweiFaceRefRepository;
 import com.facecheck.infrastructure.config.HuaweiCloudProperties;
+import com.facecheck.infrastructure.huawei.HuaweiFrsException;
 import com.facecheck.storage.HuaweiObsStorageService;
 import java.util.Map;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -98,6 +99,16 @@ public class FacePhotoRegisterConsumer {
             facePhotoRepository.save(photo);
         } catch (RetryableFacePhotoException exception) {
             handleRetryableFailure(task, photo, exception);
+        } catch (HuaweiFrsException exception) {
+            if (exception.retryable()) {
+                handleRetryableFailure(
+                        task,
+                        photo,
+                        new RetryableFacePhotoException(exception.code(), exception.getMessage(), exception)
+                );
+                return;
+            }
+            markPermanentFailure(photo, exception.code(), exception.getMessage());
         } catch (RuntimeException exception) {
             markPermanentFailure(photo, "FRS_ERROR", "Face registration failed.");
         }

@@ -6,6 +6,7 @@ import com.facecheck.checkin.model.AttendanceCheckinAttempt;
 import com.facecheck.face.FaceRecognitionProvider;
 import com.facecheck.face.repo.HuaweiFaceRefRepository;
 import com.facecheck.infrastructure.config.HuaweiCloudProperties;
+import com.facecheck.infrastructure.huawei.HuaweiFrsException;
 import com.facecheck.identity.model.User;
 import com.facecheck.identity.repo.UserRepository;
 import com.facecheck.storage.HuaweiObsStorageService;
@@ -150,12 +151,12 @@ public class CheckinRecognitionService {
                 "HUAWEI_FRS",
                 operation,
                 attempt.getId(),
-                null,
+                requestId(exception),
                 resultCode,
                 0L,
                 exception
         );
-        return RecognitionOutcome.failed(resultCode, resultMessage(resultCode), null);
+        return RecognitionOutcome.failed(resultCode, resultMessage(resultCode), requestId(exception));
     }
 
     private String normalizeDetectFailure(FaceRecognitionProvider.DetectFaceResult detectResult) {
@@ -176,6 +177,9 @@ public class CheckinRecognitionService {
     }
 
     private String classifyExternalError(RuntimeException exception) {
+        if (exception instanceof HuaweiFrsException frsException) {
+            return frsException.code();
+        }
         String message = exception.getMessage() == null ? "" : exception.getMessage().toUpperCase();
         if (message.contains("TIMEOUT")) {
             return "FRS_TIMEOUT";
@@ -184,6 +188,13 @@ public class CheckinRecognitionService {
             return "FRS_RATE_LIMITED";
         }
         return "FRS_ERROR";
+    }
+
+    private String requestId(RuntimeException exception) {
+        if (exception instanceof HuaweiFrsException frsException) {
+            return frsException.requestId();
+        }
+        return null;
     }
 
     private String resultMessage(String resultCode) {

@@ -46,7 +46,7 @@ public class HuaweiCloudFrsFaceRecognitionProvider implements FaceRecognitionPro
     }
 
     @Override
-    public void deleteFace(String faceId) {
-        client.delete(faceId);
+    public void deleteFace(String externalImageId) {
+        client.deleteByExternalImageId(externalImageId);
     }
 }
