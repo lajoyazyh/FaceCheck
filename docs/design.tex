@@ -1,0 +1,381 @@
+% FaceCheck 设计文档
+% 编译: xelatex design.tex
+
+\documentclass[11pt,a4paper]{ctexart}
+
+% ========== 页面设置 ==========
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.8cm,right=2.8cm]{geometry}
+
+% ========== 引擎检测 ==========
+\usepackage{iftex}
+\ifPDFTeX
+  % pdflatex: 需要打补丁让 TikZ 节点正确渲染中文
+  \usepackage{etoolbox}
+  \makeatletter
+  \patchcmd{\tikz@installcommands}{\tikz@node@textfont}
+    {\tikz@node@textfont\CJKfamily{zhrm}}{}{}
+  \makeatother
+\fi
+
+% ========== 图表与图形 ==========
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+
+% ========== 列表增强 ==========
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=2em}
+
+% ========== 超链接 ==========
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+
+% ========== 代码等宽字体 ==========
+\usepackage{inconsolata}
+\usepackage{xcolor}
+
+% ========== 表格 ==========
+\usepackage{array}
+\usepackage{booktabs}
+
+% ========== 页眉页脚 ==========
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{FaceCheck 设计文档}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ========== 自定义颜色 ==========
+\definecolor{springboot}{HTML}{6DB33F}
+\definecolor{pgcolor}{HTML}{336791}
+\definecolor{rediscolor}{HTML}{DC382D}
+\definecolor{rabbitcolor}{HTML}{FF6600}
+\definecolor{frscolor}{HTML}{0078D4}
+\definecolor{obscolor}{HTML}{FFB900}
+\definecolor{fluttercolor}{HTML}{02569B}
+\definecolor{boxbg}{HTML}{F5F5F5}
+\definecolor{border}{HTML}{666666}
+
+% ========== 自定义命令 ==========
+\newcommand{\tech}[1]{\texttt{\small#1}}
+
+\begin{document}
+
+\title{\Huge FaceCheck 设计文档}
+\author{管理员场次人脸签到系统}
+\date{\today}
+\maketitle
+\thispagestyle{fancy}
+
+\tableofcontents
+\newpage
+
+% ======================================================================
+\section{目标与范围}
+
+\begin{itemize}[leftmargin=2.5em]
+  \item 交付完整的人脸签到系统：管理员场次管理、匿名扫码签到、个人照片库、个人与全局签到记录。
+  \item 后端保持 Spring Boot 单体作为唯一业务边界。
+  \item 人脸识别使用华为云 FRS，图片存储使用华为云 OBS。
+  \item 匿名用户、普通用户、管理员三类访问边界清晰隔离。
+\end{itemize}
+
+% ======================================================================
+\section{非目标}
+
+\begin{itemize}[leftmargin=2.5em]
+  \item 不拆分微服务。
+  \item 不引入本地 OpenCV/ONNX 推理。
+  \item 客户端不直连 FRS/OBS/PostgreSQL/Redis/RabbitMQ。
+  \item 第一阶段不做活体检测。
+\end{itemize}
+
+% ======================================================================
+\section{架构概览}
+
+\subsection{系统上下文}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.6cm and 0.5cm,
+    box/.style={
+        rectangle, draw=border, fill=boxbg, rounded corners=3pt,
+        minimum width=3.8cm, minimum height=0.65cm, align=center, font=\footnotesize
+    },
+    appbox/.style={
+        box, fill=fluttercolor!10, draw=fluttercolor!50!black, minimum width=3cm
+    },
+    modbox/.style={
+        rectangle, draw=springboot!30, fill=springboot!3,
+        rounded corners=3pt, inner sep=6pt, font=\footnotesize, align=left,
+        minimum width=4.2cm, minimum height=2.2cm
+    },
+    extbox/.style={
+        box, minimum width=4.2cm, minimum height=0.7cm, font=\footnotesize
+    },
+    arrow/.style={->, >=Stealth, thick, draw=border},
+    darrow/.style={->, >=Stealth, thick, dashed, draw=border},
+]
+
+% ====== Flutter ======
+\node[appbox] (flutter) {Flutter App};
+
+% ====== Module nodes (placed inside backend scope) ======
+\node[modbox, below=1.2cm of flutter] (bizmod) {
+    \textbf{业务模块}\\[2pt]
+    auth \quad identity \quad session\\
+    checkin \quad admin
+};
+
+\node[modbox, right=0.6cm of bizmod] (infmod) {
+    \textbf{基础设施模块}\\[2pt]
+    face \quad (FaceRecognitionProvider)\\
+    storage \quad (OBS 适配)\\
+    infrastructure \quad (安全/日志/SDK/消息)
+};
+
+% ====== Fit backend box around modules ======
+\node[rectangle, draw=springboot!50!black, fill=none,
+      rounded corners=5pt, inner sep=8pt,
+      fit=(bizmod)(infmod), label=above:\footnotesize\textbf{Spring Boot 单体}] (backend) {};
+
+% ====== Middle row: DB / Cache / MQ ======
+\node[extbox, below=1.0cm of backend,
+      fill=pgcolor!10, draw=pgcolor!50!black] (pg)
+      {PostgreSQL (事实源)};
+
+\node[extbox, left=0.4cm of pg,
+      fill=rediscolor!10, draw=rediscolor!50!black] (redis)
+      {Redis (限流/幂等/黑名单)};
+
+\node[extbox, right=0.4cm of pg,
+      fill=rabbitcolor!10, draw=rabbitcolor!50!black] (rabbit)
+      {RabbitMQ (注册/删除补偿)};
+
+% ====== Bottom row: Huawei Cloud ======
+\node[extbox, below=0.6cm of redis,
+      fill=frscolor!10, draw=frscolor!50!black] (frs)
+      {Huawei Cloud FRS};
+
+\node[extbox, below=0.6cm of rabbit,
+      fill=obscolor!10, draw=obscolor!50!black] (obs)
+      {Huawei Cloud OBS};
+
+% ====== Arrows ======
+\draw[arrow] (flutter) -- (backend);
+
+\draw[arrow] (backend.south -| redis.north) -- (redis.north);
+\draw[arrow] (backend.south -| pg.north)    -- (pg.north);
+\draw[arrow] (backend.south -| rabbit.north) -- (rabbit.north);
+
+\draw[darrow] (redis.south)  -- (frs.north);
+\draw[darrow] (rabbit.south) -- (obs.north);
+
+\end{tikzpicture}
+\caption{系统上下文架构图}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{关键边界}
+\begin{itemize}[leftmargin=2.5em]
+  \item App 只调用后端 API。
+  \item FRS/OBS 只由后端访问。
+  \item PostgreSQL 是唯一业务事实源。
+\end{itemize}
+
+% ======================================================================
+\section{模型选择}
+
+\subsection{人脸识别模型}
+\begin{itemize}[leftmargin=2.5em]
+  \item \textbf{提供方：}华为云 FRS。
+  \item \textbf{调用链路：} \texttt{detect} $\rightarrow$ \texttt{search} $\rightarrow$ \texttt{compare}。
+  \item \textbf{抽象接口：} \tech{FaceRecognitionProvider}，生产实现为 \tech{HuaweiCloud\-Frs\-Face\-Recognition\-Provider}，测试实现为 \tech{MockFaceRecognitionProvider}。
+  \item \textbf{理由：}符合约束，避免本地推理，便于替换与测试隔离。
+\end{itemize}
+
+\subsection{图片存储}
+\begin{itemize}[leftmargin=2.5em]
+  \item \textbf{提供方：}华为云 OBS。
+  \item \textbf{对象路径：}
+  \begin{itemize}
+    \item 人脸照片：\texttt{faces/user/\{userId\}/\{photoId\}.jpg}
+    \item 签到照片：\texttt{checkins/session/\{sessionId\}/attempt/\{attemptId\}.jpg}
+  \end{itemize}
+  \item \textbf{理由：}对象存储适合二进制图片，元数据与业务关系仍由 PostgreSQL 维护。
+\end{itemize}
+
+\subsection{数据与消息}
+\begin{itemize}[leftmargin=2.5em]
+  \item \textbf{PostgreSQL：}用户、场次、照片、attempt、record、审计日志、外部调用日志的权威存储。
+  \item \textbf{Redis：}Token 黑名单、限流、幂等结果缓存。
+  \item \textbf{RabbitMQ：}人脸照片异步注册与删除补偿，各含重试与死信队列。
+\end{itemize}
+
+% ======================================================================
+\section{关键数据模型}
+
+第一阶段核心实体：
+
+\begin{table}[htbp]
+\centering
+\caption{核心实体概览}
+\label{tab:entities}
+\footnotesize
+\begin{tabular}{@{}>{\ttfamily}l p{4cm} p{3.8cm} @{}}
+\toprule
+实体 & 关键字段 & 约束/状态 \\
+\midrule
+User & username, password\_hash, role, status, lastLoginAt &
+  表名 user\_account，ROLE: USER|ADMIN，STATUS: ACTIVE|LOCKED|DISABLED \\
+
+FacePhoto & obsBucket, obsRegion, obsObjectKey, contentType,
+           sizeBytes, sha256, storageProvider, detectStatus,
+           registerStatus, failureReason, failureCode &
+  DETECT: PENDING|PASSED|FAILED，REGISTER: PENDING|ACTIVE|FAILED|DELETE\_PENDING|DELETE\_FAILED|DELETED \\
+
+HuaweiFaceRef & userId, facePhotoId, faceSetName, frsFaceId,
+                externalImageId, externalFields(JSONB), status &
+  STATUS: ACTIVE|DELETE\_PENDING|DELETE\_FAILED|DELETED|ORPHANED \\
+
+AttendanceSession & name, description, startTime, endTime,
+                     lateAfterTime, status, qrToken &
+  STATUS: DRAFT|PUBLISHED|CLOSED|CANCELED，qrToken 高熵唯一 \\
+
+AttendanceCheckinAttempt & obsBucket, obsRegion, obsObjectKey,
+                            contentType, sizeBytes, sha256,
+                            status, resultCode, failureReason,
+                            frsRequestId, matchedUserId, similarity,
+                            idempotencyKey, reviewed &
+  STATUS: PROCESSING|SUCCESS|FAILED|DUPLICATE\_CHECKIN，\\
+  UK(session\_id, idempotency\_key) \\
+
+AttendanceRecord & sessionId, userId, attemptId, checkinTime,
+                   status, similarity, source &
+  STATUS: VALID|MANUAL\_CONFIRMED，SRC: APP\_QR\_ANON|ADMIN\_RETRY，\\
+  UK(session\_id, user\_id) + UK(attempt\_id) \\
+
+AuditLog & actorUserId, actorRole, action, targetType,
+          targetId, summary, detailJson(JSONB) & 管理员关键操作审计 \\
+
+ExternalServiceCallLog & serviceName, operation, requestId,
+                          status, latencyMs, errorCode &
+  SVC: HUAWEI\_FRS|HUAWEI\_OBS，STATUS: SUCCESS|FAILED|TIMEOUT|RATE\_LIMITED|RETRYING \\
+
+SystemConfig & configKey, configValue, valueType, description &
+  TYPE: STRING|NUMBER|BOOLEAN|JSON，白名单配置管理 \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{关键约束}
+\begin{itemize}[leftmargin=2.5em]
+  \item \tech{AttendanceRecord} 唯一约束 \texttt{unique(session\_id, user\_id)} 和 \texttt{unique(attempt\_id)}。
+  \item \tech{AttendanceCheckinAttempt} 唯一约束 \texttt{unique(session\_id, idempotency\_key)}。
+  \item \tech{qrToken} 高熵且唯一。
+\end{itemize}
+
+% ======================================================================
+\section{关键流程}
+
+\subsection{人脸照片上传与异步注册}
+\begin{enumerate}[leftmargin=2.5em]
+  \item 登录用户或管理员上传照片。
+  \item 后端校验大小、MIME、扩展名、可解码性（$\le$10MB，JPEG/PNG/WEBP）。
+  \item 后端强制每人最多 5 张可用照片。
+  \item 上传到 OBS，创建 FacePhoto（detectStatus/registerStatus 均为 PENDING）。
+  \item 发送 \tech{FacePhotoRegisterTask} 到 RabbitMQ。
+  \item 消费者通过 \tech{FaceRecognitionProvider} 完成 detect + enroll。
+  \item 成功写 \tech{HuaweiFaceRef} 并标记 FacePhoto ACTIVE；失败写入原因。
+\end{enumerate}
+
+\subsection{匿名扫码签到}
+\begin{enumerate}[leftmargin=2.5em]
+  \item 管理员发布场次并生成 qrToken。
+  \item App 扫码调用公开入口确认场次可用。
+  \item 提交签到照片与 idempotencyKey、deviceId。
+  \item 后端限流与幂等检查。
+  \item 生成 \tech{AttendanceCheckinAttempt} 并上传签到照片。
+  \item 执行 \texttt{detect} $\rightarrow$ \texttt{search} $\rightarrow$ \texttt{compare}。
+  \item 映射候选到 userId 并按阈值判断。
+  \item 成功写 \tech{AttendanceRecord}；唯一约束冲突返回 DUPLICATE\_CHECKIN。
+  \item 返回 SUCCESS / FAILED / PROCESSING / DUPLICATE\_CHECKIN。
+\end{enumerate}
+
+\subsection{场次生命周期}
+\begin{itemize}[leftmargin=2.5em]
+  \item \texttt{DRAFT} $\rightarrow$ \texttt{PUBLISHED} $\rightarrow$ \texttt{CLOSED}，或 \texttt{DRAFT/PUBLISHED} $\rightarrow$ \texttt{CANCELED}。
+  \item qrToken 轮换后旧 token 失效。
+\end{itemize}
+
+% ======================================================================
+\section{安全与权限}
+\begin{itemize}[leftmargin=2.5em]
+  \item JWT 保护需要登录的接口，注销写入 Redis 黑名单。
+  \item 普通用户只能访问自身数据。
+  \item 管理员接口仅限管理员角色。
+  \item 匿名接口仅限场次解析、签到提交与结果查询。
+\end{itemize}
+
+% ======================================================================
+\section{结果与错误码}
+
+\subsection{主状态}
+\begin{center}
+\texttt{SUCCESS} \quad | \quad
+\texttt{FAILED} \quad | \quad
+\texttt{PROCESSING} \quad | \quad
+\texttt{DUPLICATE\_CHECKIN}
+\end{center}
+
+\subsection{关键结果码}
+
+\begin{table}[htbp]
+\centering
+\caption{签到结果码}
+\label{tab:result-codes}
+\begin{tabular}{@{}ll@{}}
+\toprule
+类别 & 结果码 \\
+\midrule
+图片问题 & \texttt{INVALID\_IMAGE} \quad \texttt{NO\_FACE} \quad \texttt{MULTIPLE\_FACES} \\
+匹配结果 & \texttt{LOW\_CONFIDENCE} \quad \texttt{NO\_MATCH} \quad \texttt{DUPLICATE\_CHECKIN} \quad \texttt{MANUAL\_REVIEW} \\
+服务异常 & \texttt{FRS\_TIMEOUT} \quad \texttt{FRS\_RATE\_LIMITED} \quad \texttt{FRS\_ERROR} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+\section{可观测性与审计}
+\begin{itemize}[leftmargin=2.5em]
+  \item 请求链路统一注入 traceId。
+  \item \tech{AuditLog} 记录管理员关键操作。
+  \item \tech{ExternalServiceCallLog} 记录 FRS/OBS 调用 requestId 与耗时。
+\end{itemize}
+
+% ======================================================================
+\section{测试策略}
+\begin{itemize}[leftmargin=2.5em]
+  \item \tech{MockFaceRecognitionProvider} 覆盖单元与集成测试。
+  \item Testcontainers 覆盖 PostgreSQL、Redis、RabbitMQ。
+  \item 关键 API 合同测试与集成测试。
+  \item Android 模拟器或真机验证扫码、拍照、上传与匿名签到流程。
+\end{itemize}
+
+% ======================================================================
+\section{风险与缓解}
+\begin{itemize}[leftmargin=2.5em]
+  \item \textbf{FRS 不稳定：}用明确结果码和 attempt 记录可追溯失败。
+  \item \textbf{重复提交：}幂等缓存 + 数据库唯一约束双重保护。
+  \item \textbf{照片质量：}上传阶段前置校验并输出明确失败原因。
+\end{itemize}
+
+% ======================================================================
+\section{后续扩展}
+\begin{itemize}[leftmargin=2.5em]
+  \item 可切换为异步签到处理，但保持 PROCESSING 与结果查询契约不变。
+  \item 系统状态/配置页面作为第二阶段扩展。
+\end{itemize}
+
+\end{document}
