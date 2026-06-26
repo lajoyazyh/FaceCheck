@@ -75,6 +75,8 @@ services:
       OBS_ENABLED: ${OBS_ENABLED:-false}
       FRS_AK: ${FRS_AK:-}
       FRS_SK: ${FRS_SK:-}
+      OBS_AK: ${OBS_AK:-}
+      OBS_SK: ${OBS_SK:-}
       FRS_PROJECT_ID: ${FRS_PROJECT_ID:-}
       FRS_REGION: ${FRS_REGION:-}
       FRS_ENDPOINT: ${FRS_ENDPOINT:-}
