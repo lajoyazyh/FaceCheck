@@ -28,22 +28,22 @@ class AdminHomePage extends StatelessWidget {
           _AdminQuickAction(
             title: '用户管理',
             subtitle: '新增、编辑、停用用户，并保持用户名作为唯一业务标识。',
-            onTap: () => context.go(AppRoutePaths.adminUsers),
+            onTap: () => context.push(AppRoutePaths.adminUsers),
           ),
           _AdminQuickAction(
             title: '场次管理',
             subtitle: '创建、编辑、发布、关闭、取消场次，并查看二维码入口。',
-            onTap: () => context.go(AppRoutePaths.adminSessions),
+            onTap: () => context.push(AppRoutePaths.adminSessions),
           ),
           _AdminQuickAction(
             title: '全局记录',
             subtitle: '按场次、用户和状态查看已签到记录。',
-            onTap: () => context.go(AppRoutePaths.adminRecords),
+            onTap: () => context.push(AppRoutePaths.adminRecords),
           ),
           _AdminQuickAction(
             title: '异常复核',
             subtitle: '查看异常签到尝试、补充复核备注，并触发安全重试。',
-            onTap: () => context.go(AppRoutePaths.adminReview),
+            onTap: () => context.push(AppRoutePaths.adminReview),
           ),
           const SizedBox(height: 8),
           Text(
@@ -54,12 +54,12 @@ class AdminHomePage extends StatelessWidget {
           _AdminQuickAction(
             title: '系统状态',
             subtitle: '查看数据库、Redis、RabbitMQ、FRS 和 OBS 的健康摘要。',
-            onTap: () => context.go(AppRoutePaths.adminSystemState),
+            onTap: () => context.push(AppRoutePaths.adminSystemState),
           ),
           _AdminQuickAction(
             title: '系统配置',
             subtitle: '维护白名单配置项，例如阈值、限流和文件大小限制。',
-            onTap: () => context.go(AppRoutePaths.adminSystemConfig),
+            onTap: () => context.push(AppRoutePaths.adminSystemConfig),
           ),
         ],
       ),

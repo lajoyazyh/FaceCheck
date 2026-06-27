@@ -1,7 +1,9 @@
 import 'package:facecheck_app/features/face/face_photo_capture_service.dart';
 import 'package:facecheck_app/features/face/face_photo_upload_controller.dart';
 import 'package:facecheck_app/features/face/widgets/face_photo_status_card.dart';
+import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/shared/config/app_test_keys.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,7 +30,10 @@ class _FacePhotoPageState extends ConsumerState<FacePhotoPage> {
 
     return Scaffold(
       key: AppTestKeys.facePhotoPage,
-      appBar: AppBar(title: const Text('人脸照片')),
+      appBar: AppBar(
+        leading: const AppBackButton(fallbackLocation: AppRoutePaths.home),
+        title: const Text('人脸照片'),
+      ),
       body: state.isLoading && state.photos.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

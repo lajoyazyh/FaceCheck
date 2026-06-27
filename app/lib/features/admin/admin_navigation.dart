@@ -1,4 +1,5 @@
 import 'package:facecheck_app/features/auth/access_policy.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -84,6 +85,7 @@ class AdminNavigation extends StatelessWidget {
     final appBar = AppBar(
       title: Text(title),
       actions: <Widget>[
+        const AppBackButton(fallbackLocation: AppRoutePaths.home),
         IconButton(
           tooltip: '返回首页',
           onPressed: () => context.go(AppRoutePaths.home),

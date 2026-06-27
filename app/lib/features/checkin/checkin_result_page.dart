@@ -1,6 +1,7 @@
 import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/features/checkin/checkin_repository.dart';
 import 'package:facecheck_app/features/checkin/checkin_result_controller.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,9 @@ class _CheckinResultPageState extends ConsumerState<CheckinResultPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(
+          fallbackLocation: AppRoutePaths.publicSessionEntry,
+        ),
         title: const Text('签到结果'),
       ),
       body: state.isLoading && state.attempt == null

@@ -1,6 +1,7 @@
 import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/features/checkin/qr_scan_controller.dart';
 import 'package:facecheck_app/shared/config/app_test_keys.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -68,7 +69,7 @@ class _QrScanPageState extends ConsumerState<QrScanPage> {
     }
     _hasNavigated = true;
     final encodedToken = Uri.encodeQueryComponent(qrToken);
-    context.go('${AppRoutePaths.publicSessionConfirm}?qrToken=$encodedToken');
+    context.push('${AppRoutePaths.publicSessionConfirm}?qrToken=$encodedToken');
   }
 
   @override
@@ -79,6 +80,7 @@ class _QrScanPageState extends ConsumerState<QrScanPage> {
     return Scaffold(
       key: AppTestKeys.anonymousCheckinEntryPage,
       appBar: AppBar(
+        leading: const AppBackButton(fallbackLocation: AppRoutePaths.login),
         title: const Text('场次入口'),
       ),
       body: ListView(

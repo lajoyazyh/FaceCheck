@@ -2,6 +2,7 @@ import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/features/checkin/anonymous_checkin_controller.dart';
 import 'package:facecheck_app/features/face/face_photo_capture_service.dart';
 import 'package:facecheck_app/shared/config/app_test_keys.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,10 @@ class CheckinCapturePage extends ConsumerWidget {
     return Scaffold(
       key: AppTestKeys.anonymousCheckinCapturePage,
       appBar: AppBar(
+        leading: AppBackButton(
+          fallbackLocation:
+              '${AppRoutePaths.publicSessionConfirm}?qrToken=${Uri.encodeQueryComponent(qrToken)}',
+        ),
         title: const Text('拍摄签到照片'),
       ),
       body: ListView(
