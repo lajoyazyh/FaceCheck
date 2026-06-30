@@ -1,5 +1,7 @@
+import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/features/records/personal_records_controller.dart';
 import 'package:facecheck_app/shared/config/app_test_keys.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,7 +29,10 @@ class _PersonalRecordsPageState extends ConsumerState<PersonalRecordsPage> {
 
     return Scaffold(
       key: AppTestKeys.personalRecordsPage,
-      appBar: AppBar(title: const Text('签到记录')),
+      appBar: AppBar(
+        leading: const AppBackButton(fallbackLocation: AppRoutePaths.home),
+        title: const Text('签到记录'),
+      ),
       body: state.isLoading && state.records.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

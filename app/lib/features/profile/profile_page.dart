@@ -1,6 +1,7 @@
 import 'package:facecheck_app/features/auth/access_policy.dart';
 import 'package:facecheck_app/features/profile/profile_controller.dart';
 import 'package:facecheck_app/shared/config/app_test_keys.dart';
+import 'package:facecheck_app/shared/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -57,7 +58,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return Scaffold(
       key: AppTestKeys.userProfilePage,
-      appBar: AppBar(title: const Text('个人资料')),
+      appBar: AppBar(
+        leading: const AppBackButton(fallbackLocation: AppRoutePaths.home),
+        title: const Text('个人资料'),
+      ),
       body: state.isLoading && profile == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -148,7 +152,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           '管理最多五张启用的人脸照片，并查看处理状态。',
                         ),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.go(AppRoutePaths.facePhotos),
+                        onTap: () => context.push(AppRoutePaths.facePhotos),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -158,7 +162,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () =>
-                            context.go(AppRoutePaths.attendanceRecords),
+                            context.push(AppRoutePaths.attendanceRecords),
                       ),
                     ],
                   ),
